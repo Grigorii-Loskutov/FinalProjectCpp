@@ -6,11 +6,12 @@
 
 class ParcerHTML {
 private:
-	std::vector<std::string> Words; // ¬ектор дл€ хранени€ строк исходной страницы, очищенной от метаинформации (только текст)
+	std::string Words; // ¬ектор дл€ хранени€ строк исходной страницы, очищенной от метаинформации (только текст)
 	std::set<std::string> Links; // —опоставление дл€ хранени€ ссылок, найденных на странице
 	std::map<std::string, int> Frequencies; // Ќабор дл€ хранени€ частот отдельных слов (пара: слово, количество в векторе)
 public:
-	ParcerHTML(std::vector<std::string> HTML_strings);
+	//ParcerHTML(std::vector<std::string> HTML_strings);
+	ParcerHTML(std::string HTML_strings);
 	std::set<std::string> getLinks();
-	std::vector<std::string> getWords();
+	std::string getWords();
 };
