@@ -1,6 +1,5 @@
 #include "HTTPClient.h"
 
-
 #include <cstdlib>
 #include <iostream>
 
@@ -9,6 +8,8 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/locale.hpp>
+#include <regex>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -20,7 +21,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 	try
 	{
-		
+
 		int version = 11;//version_in == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
 
 		// The io_context is required for all I/O
@@ -53,17 +54,38 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		// Receive the HTTP response
 		http::read(stream, buffer, res);
 
-		// Write the message to standard out
-		//std::cout << res << std::endl;
+		// Получение значения заголовка Content-Type для определения типа кодировки
+		auto contentTypeHeader = res.find("Content-Type");
+		if (contentTypeHeader != res.end()) {
+			std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
+		}
+		else {
+			std::cout << "Content-Type header not found" << std::endl;
+		}
+		std::string TypeHeaderStr = contentTypeHeader->value();
+		std::regex charsetPattern(R"(charset=([^\s;]+))");
+		std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
+		std::sregex_iterator end;
+		std::smatch match;
+		std::string charset;
+		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
+			if (match.size() > 1) {
+				std::string charset = match[1];
+				std::cout << "Найден charset: " << charset << std::endl;
+			}
+		}
 
 		std::stringstream response_stream;
 		response_stream << res;
 
 		std::string line;
 		while (std::getline(response_stream, line)) {
-			lines.push_back(line);
+			//lines.push_back(line); // для vector
+			lines.append(line);
 		}
-
+		// Выполним перекодировку
+		std::string utf8_line = boost::locale::conv::between(lines, "UTF-8", charset);
+		lines = std::move(utf8_line);
 		// Gracefully close the socket
 		beast::error_code ec;
 		stream.socket().shutdown(tcp::socket::shutdown_both, ec);
@@ -84,6 +106,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 	return EXIT_SUCCESS;
 }
 
-std::vector<std::string> HTTPclient::getData() {
+std::string HTTPclient::getData() {
+
 	if (sizeof(lines)) return lines;
 }
