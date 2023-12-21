@@ -25,7 +25,8 @@ int main()
 {
 	setlocale(LC_ALL, "Russian");
 	SetConsoleCP(65001);
-	SetConsoleOutputCP(65001);
+	SetConsoleOutputCP(65001); //UTF-8
+	//SetConsoleOutputCP(20866); // koi8-r
 	// Прочитаем конфигурацию в файле configuration.ini
 	try {
 		char buffer[MAX_PATH];
@@ -68,16 +69,19 @@ int main()
 
 	HTTPclient client;
 	client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
-	std::vector<std::string> response = client.getData();
+	//std::vector<std::string> response = client.getData();
+	std::string response = client.getData();
 	ParcerHTML parcerHTML(response);
 	std::set<std::string> Links = parcerHTML.getLinks();
-	std::vector<std::string> Words = parcerHTML.getWords();
+	std::string Words = parcerHTML.getWords();
 	for (const auto& line : Links) {
 		std::cout << line << std::endl;
 	}
-	for (const auto& line : Words) {
-		std::cout << line << std::endl;
-	}
+	std::cout << Words << std::endl;
+	//std::cout << response;
+	//for (const auto& line : Words) {
+	//	std::cout << line << std::endl;
+	//}
 
 
 }
