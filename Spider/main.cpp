@@ -6,7 +6,6 @@
 #include <thread>
 #include "ParcerINI.h"
 #include "HTTPclient.h"
-#include "HTTPserverSync.h"
 
 std::string DataBaseHostName;
 std::string DataBaseName;
@@ -65,13 +64,6 @@ int main()
 		//std::cout << ex.what() << std::endl;
 	}
 
-	//Отправим запрос на HTTP, указанный в конфигурации
-	HTTPserver server;
-	char* addrServer = { "127.0.0.1" };
-	char* portServer = { "8080" };
-	char* docRootServer = { "." };
-	std::thread serverThread(&HTTPserver::MakeHTTPserver, &server, FinderAddress, FinderPort, docRootServer);
-	//server.MakeHTTPserver(4, addrServer, portServer, docRootServer);
 
 	HTTPclient client;
 	client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
@@ -79,6 +71,5 @@ int main()
 	for (const auto& line : response) {
 		std::cout << line << std::endl;
 	}
-	serverThread.join(); // ToDo: Как завершить работу сервера?
 }
 
