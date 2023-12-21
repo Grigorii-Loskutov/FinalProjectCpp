@@ -6,6 +6,7 @@
 #include <thread>
 #include "ParcerINI.h"
 #include "HTTPclient.h"
+#include "ParcerHTML.h"
 
 std::string DataBaseHostName;
 std::string DataBaseName;
@@ -68,8 +69,16 @@ int main()
 	HTTPclient client;
 	client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
 	std::vector<std::string> response = client.getData();
-	for (const auto& line : response) {
+	ParcerHTML parcerHTML(response);
+	std::set<std::string> Links = parcerHTML.getLinks();
+	std::vector<std::string> Words = parcerHTML.getWords();
+	for (const auto& line : Links) {
 		std::cout << line << std::endl;
 	}
+	for (const auto& line : Words) {
+		std::cout << line << std::endl;
+	}
+
+
 }
 

@@ -20,17 +20,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 	try
 	{
-		// Check command line arguments.
-		if (version_in != 4 && version_in != 5)
-		{
-			std::cerr <<
-				"Usage: http-client-sync <host> <port> <target> [<HTTP version: 1.0 or 1.1(default)>]\n" <<
-				"Example:\n" <<
-				"    http-client-sync www.example.com 80 /\n" <<
-				"    http-client-sync www.example.com 80 / 1.0\n";
-			return EXIT_FAILURE;
-		}
-
+		
 		int version = 11;//version_in == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
 
 		// The io_context is required for all I/O

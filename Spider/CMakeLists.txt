@@ -9,6 +9,8 @@ set(PROJECT_SOURCES
         ParcerINI.cpp
         HTTPclient.h
         HTTPclient.cpp
+        ParcerHTML.h
+        ParcerHTML.cpp
         main.cpp
 )
 
@@ -17,7 +19,7 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-add_executable(Spyder ${PROJECT_SOURCES})
+add_executable(Spyder ${PROJECT_SOURCES} "ParcerHTML.h" "ParcerHTML.cpp")
 
 add_subdirectory(e:/Sources/libpqxx-7.7.5 libpqxx-build) # Путь к libpq++
 target_compile_features(Spyder PRIVATE cxx_std_17) # Включим C++17
