@@ -82,6 +82,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		while (std::getline(response_stream, line)) {
 			//lines.push_back(line); // для vector
 			//std::cout << line;
+			lines.append(" ");
 			lines.append(line);
 		}
 		//std::cout << lines;

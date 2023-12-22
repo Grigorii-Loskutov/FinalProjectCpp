@@ -13,5 +13,5 @@ public:
 		const std::string& target, int version_in);
 	std::string getData();
 private:
-	std::string lines; // получим HTML одной строкой
+	std::string lines; // РїРѕР»СѓС‡РёРј HTML РѕРґРЅРѕР№ СЃС‚СЂРѕРєРѕР№
 };
