@@ -16,15 +16,15 @@
 ParcerHTML::ParcerHTML(std::string HTML_strings) {
 	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
-	// –егул¤рное выражение дл¤ поиска ссылок в HTML
+	// Регулярное выражение дл¤ поиска ссылок в HTML
 	//std::regex LINKpattern("<a href=[^>]+(?=\/?>|$)");  // href= - начало, не включет >, заканчиваетс¤ на /> или >
 	//std::regex LINKpattern("<a href=[^>]+(?=\/?>)");
 	std::regex LINKpattern("<a href=[^>]*>");
 	//std::regex LINKpattern("<a href=\"(.*?)\"");
 
-	// –егул¤рное выражение дл¤ поиска текста
+	// Регулярное выражение для поиска текста
 	//std::regex WORDpattern(">([^<>]+)<");
-	std::regex WORDpattern(">([^<]+)<");
+	//std::regex WORDpattern(">([^<]+)<");
 	//std::regex notWORDpattern("<.*>");
 	/*std::string superString;
 	for (const auto& line : HTML_strings) {
@@ -46,43 +46,35 @@ ParcerHTML::ParcerHTML(std::string HTML_strings) {
 	}
 
 	//std::regex tagRegex("<[^>]*>");
-	// ”даление html информации в <>
+	// Удаление html информации в <>
 	std::regex tagRegex(R"((<[^>]*>|<!--[^>]*-->))");
-	Words = std::regex_replace(HTML_strings, tagRegex, " ");
+	Line = std::regex_replace(HTML_strings, tagRegex, " ");
 
-	// ”даление строки вида &nbsp;
+	// Удаление строки вида &nbsp;
 	std::regex pattern_nbsp(R"((&nbsp;\s*)+)");
-	Words = std::regex_replace(Words, pattern_nbsp, " ");
-	
-	// ”даление знаков препинани¤ и скобок
+	Line = std::regex_replace(Line, pattern_nbsp, " ");
+
+	// Удаление знаков препинания и скобок
 	std::regex pattern_punctuation(R"([[:punct:]()])");
-	Words = std::regex_replace(Words, pattern_punctuation, " ");
+	Line = std::regex_replace(Line, pattern_punctuation, " ");
 
-	// ”даление чисел
+	// Удаление чисел
 	std::regex pattern_numbers(R"(\b\d+\b)");
-	Words = std::regex_replace(Words, pattern_numbers, " ");
+	Line = std::regex_replace(Line, pattern_numbers," ");
 
-	// ”даление слов длиной менее 3х символов
-	std::regex pattern_short_words(R"(\b\w{1,2}\b)");
-	Words = std::regex_replace(Words, pattern_short_words, " ");
+	// Удаление лишних пробелов
+	std::regex SPACEpattern(R"(\s+)");
+	Line = std::regex_replace(Line, SPACEpattern, "_");
+
+	//// Удаление слов длиной менее 3х символов  R"(\b\w{1,3}\b)"
+	//std::regex pattern_short_words(R"(_.{1,3}_)");
+	//Words = std::regex_replace(Words, pattern_short_words, "_");
 
 	// Переведем в нижний регистр
 
-	//boost::locale::generator gen;
-	//std::locale loc = gen("ru_RU.UTF-8"); //  акое-то шаманство с генератором
-	//std::locale::global(loc);
-
-
-	//std::wstring_convert<boost::locale::converter<wchar_t>, wchar_t> converter;
-	//std::wstring wstr = converter.from_bytes(Words);
-
-
-	//boost::locale::to_lower(wstr, loc);
-	//boost::locale::to_lower(Words, loc);
-
-	//Words = converter.to_bytes(wstr);
-	//Words = boost::locale::to_lower(Words, loc);
-
+	for (char& c : Line) {
+		c = std::tolower(c);
+	}
 
 }
 
@@ -90,9 +82,11 @@ std::set<std::string> ParcerHTML::getLinks() {
 	return Links;
 }
 
-//std::vector<std::string> ParcerHTML::getWords() {
-std::string ParcerHTML::getWords() {
 
-	return Words;
+std::string ParcerHTML::getLine() {
+	return Line;
 }
 
+std::vector<std::string> ParcerHTML::getWords() {
+	return Words;
+}
