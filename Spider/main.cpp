@@ -58,6 +58,21 @@ int main()
 		std::cout << "FinderAddress: " << FinderAddress << std::endl;
 		std::cout << "FinderPort: " << FinderPort << std::endl;
 
+		HTTPclient client;
+		client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
+		//std::vector<std::string> response = client.getData();
+		std::string response = client.getData();
+		ParcerHTML parcerHTML(response);
+		std::set<std::string> Links = parcerHTML.getLinks();
+		std::string Words = parcerHTML.getWords();
+		for (const auto& line : Links) {
+			std::cout << line << std::endl;
+		}
+		std::cout << Words << std::endl;
+		//std::cout << response;
+		//for (const auto& line : Words) {
+		//	std::cout << line << std::endl;
+		//}
 
 	}
 	catch (const std::exception& ex) {
@@ -65,24 +80,6 @@ int main()
 		std::cout << "\n" << except;
 		//std::cout << ex.what() << std::endl;
 	}
-
-
-	HTTPclient client;
-	client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
-	//std::vector<std::string> response = client.getData();
-	std::string response = client.getData();
-	ParcerHTML parcerHTML(response);
-	std::set<std::string> Links = parcerHTML.getLinks();
-	std::string Words = parcerHTML.getWords();
-	for (const auto& line : Links) {
-		std::cout << line << std::endl;
-	}
-	std::cout << Words << std::endl;
-	//std::cout << response;
-	//for (const auto& line : Words) {
-	//	std::cout << line << std::endl;
-	//}
-
 
 }
 
