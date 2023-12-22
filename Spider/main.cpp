@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 //#include <pqxx/pqxx>
 #include <windows.h>
 #include <exception>
@@ -26,7 +26,6 @@ int main()
 	setlocale(LC_ALL, "Russian");
 	SetConsoleCP(65001);
 	SetConsoleOutputCP(65001); //UTF-8
-	//SetConsoleOutputCP(20866); // koi8-r
 	// Прочитаем конфигурацию в файле configuration.ini
 	try {
 		char buffer[MAX_PATH];
@@ -64,7 +63,7 @@ int main()
 		std::string response = client.getData();
 		ParcerHTML parcerHTML(response);
 		std::set<std::string> Links = parcerHTML.getLinks();
-		std::string Words = parcerHTML.getWords();
+		std::string Words = parcerHTML.getLine();
 		for (const auto& line : Links) {
 			std::cout << line << std::endl;
 		}
