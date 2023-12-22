@@ -5,7 +5,7 @@
 #include <vector>
 
 class HTTPclient {
-	
+
 public:
 
 	// Function declaration for performing HTTP GET request

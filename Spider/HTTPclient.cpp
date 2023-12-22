@@ -54,7 +54,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		// Receive the HTTP response
 		http::read(stream, buffer, res);
 
-		// Получение значения заголовка Content-Type для определения типа кодировки
+		// РџРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ Р·Р°РіРѕР»РѕРІРєР° Content-Type РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ С‚РёРїР° РєРѕРґРёСЂРѕРІРєРё
 		auto contentTypeHeader = res.find("Content-Type");
 		if (contentTypeHeader != res.end()) {
 			std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
@@ -70,22 +70,29 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		std::string charset;
 		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
 			if (match.size() > 1) {
-				std::string charset = match[1];
-				std::cout << "Найден charset: " << charset << std::endl;
+				charset = match[1];
+				std::cout << "РќР°Р№РґРµРЅ charset: " << charset << std::endl;
 			}
 		}
 
 		std::stringstream response_stream;
 		response_stream << res;
-
+		//std::cout << res;
 		std::string line;
 		while (std::getline(response_stream, line)) {
-			//lines.push_back(line); // для vector
+			//lines.push_back(line); // РґР»СЏ vector
+			//std::cout << line;
 			lines.append(line);
 		}
-		// Выполним перекодировку
-		std::string utf8_line = boost::locale::conv::between(lines, "UTF-8", charset);
-		lines = std::move(utf8_line);
+		//std::cout << lines;
+		// Р’С‹РїРѕР»РЅРёРј РїРµСЂРµРєРѕРґРёСЂРѕРІРєСѓ
+		//const std::string UTF8{ "UTF-8" };
+		//std::cout << "Charset = " << charset << std::endl;
+		//std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+		////std::cout << utf8_line;
+		//lines = std::move(utf8_line);
+		////std::cout << lines;
+		
 		// Gracefully close the socket
 		beast::error_code ec;
 		stream.socket().shutdown(tcp::socket::shutdown_both, ec);
