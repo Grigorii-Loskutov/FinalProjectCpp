@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(Spyder)
 
+# Устанавливаем опцию компилятора для работы с UTF-8
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
+
 # Установка пути к Boost
 set(BOOST_ROOT "c:/vcpkg/") # Путь к папке, в которой установлен Boost
 
