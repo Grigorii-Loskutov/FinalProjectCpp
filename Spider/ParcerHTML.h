@@ -16,4 +16,5 @@ public:
 	std::set<std::string> getLinks();
 	std::string getLine();
 	std::vector<std::string> getWords();
+	std::map<std::string, int> getFrequencies();
 };

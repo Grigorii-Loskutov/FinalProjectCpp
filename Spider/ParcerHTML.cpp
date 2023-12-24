@@ -71,9 +71,40 @@ ParcerHTML::ParcerHTML(std::string HTML_strings) {
 	//Words = std::regex_replace(Words, pattern_short_words, "_");
 
 	// Переведем в нижний регистр
-
 	for (char& c : Line) {
 		c = std::tolower(c);
+	}
+
+	// Выделим отдельные слова и большой строки, разделенной "_"
+	/*unsigned int cut_end_pos{ 0 }; 
+	unsigned int cut_start_pos{ 0 };
+	for (unsigned int iter = 0; iter < Line.length();++iter) {
+		if (Line[iter] == '_') {
+			cut_end_pos = iter;
+			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
+			if (word.length() >= 4) {
+				Words.push_back(word);
+			}
+			cut_start_pos = iter + 1;
+		}
+	}*/
+
+
+	// Заполним наборя для хранения частот
+	/*for (const auto& word_iter : Words) {
+		Frequencies[word_iter]++;
+	}*/
+	unsigned int cut_end_pos{ 0 };
+	unsigned int cut_start_pos{ 0 };
+	for (unsigned int iter = 0; iter < Line.length(); ++iter) {
+		if (Line[iter] == '_') {
+			cut_end_pos = iter;
+			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
+			if (word.length() >= 4) {
+				Frequencies[word]++;
+			}
+			cut_start_pos = iter + 1;
+		}
 	}
 
 }
@@ -89,4 +120,8 @@ std::string ParcerHTML::getLine() {
 
 std::vector<std::string> ParcerHTML::getWords() {
 	return Words;
+}
+
+std::map<std::string, int> ParcerHTML::getFrequencies() {
+	return Frequencies;
 }
