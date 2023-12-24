@@ -22,7 +22,7 @@ set(PROJECT_SOURCES
 # Поиск и подключение Boost
 find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
 
-add_executable(Spyder ${PROJECT_SOURCES} "database.h" "database.cpp")
+add_executable(Spyder ${PROJECT_SOURCES})
 
 # Включение директорий Boost
 include_directories(${Boost_INCLUDE_DIRS})
