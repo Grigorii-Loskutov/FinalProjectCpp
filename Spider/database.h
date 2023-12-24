@@ -18,6 +18,4 @@ private:
 
 	void table_create(const std::string str_creation);
 
-
-
 };

@@ -48,7 +48,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		if (match_str.length() >= http_pref.length() &&
 			match_str.compare(0, http_pref.length(), http_pref) != 0) {
 			match_str = http_pref + SourceLink + match_str;
-			std::cout << "Formatted link: " << match_str << std::endl;
+			//std::cout << "Formatted link: " << match_str << std::endl;
 		}
 		// Желательно проверить, что SourceLink не содержится на странице, чтобы бесконечно ее не добавлять
 		Links.insert(match_str);
