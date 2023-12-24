@@ -116,5 +116,5 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 std::string HTTPclient::getData() {
 
-	if (sizeof(lines)) return lines;
+	if (lines.length()) return lines;
 }
