@@ -63,15 +63,18 @@ int main()
 		std::string response = client.getData();
 		ParcerHTML parcerHTML(response);
 		std::set<std::string> Links = parcerHTML.getLinks();
-		std::string Words = parcerHTML.getLine();
+		std::vector<std::string> Words = parcerHTML.getWords();
+		std::map<std::string, int> Frequencies = parcerHTML.getFrequencies();
 		for (const auto& line : Links) {
 			std::cout << line << std::endl;
 		}
-		std::cout << Words << std::endl;
+		//std::cout << Words << std::endl;
 		//std::cout << response;
-		//for (const auto& line : Words) {
-		//	std::cout << line << std::endl;
-		//}
+		unsigned int counter = 0;
+		for (const auto& pair : Frequencies) {
+			std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
+			++counter;
+		}
 
 	}
 	catch (const std::exception& ex) {
