@@ -13,7 +13,7 @@
 #define TO_STRING(x) STRINGIZE(x)
 
 //ParcerHTML::ParcerHTML(std::vector<std::string> HTML_strings) {
-ParcerHTML::ParcerHTML(std::string HTML_strings) {
+ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
 	// Регулярное выражение дл¤ поиска ссылок в HTML
@@ -41,6 +41,16 @@ ParcerHTML::ParcerHTML(std::string HTML_strings) {
 		match_str = match_str.substr(8);
 		match_str = match_str.substr(0, match_str.size() - 1);
 		//std::cout << "Found link: " << match_str << std::endl;
+		// 
+		// Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
+		// поэтому нужно внутренние сслыки дполнить полным адресом
+		std::string const http_pref = "http://";
+		if (match_str.length() >= http_pref.length() &&
+			match_str.compare(0, http_pref.length(), http_pref) != 0) {
+			match_str = http_pref + SourceLink + match_str;
+			std::cout << "Formatted link: " << match_str << std::endl;
+		}
+		// Желательно проверить, что SourceLink не содержится на странице, чтобы бесконечно ее не добавлять
 		Links.insert(match_str);
 		++it_link;
 	}
@@ -106,7 +116,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings) {
 			cut_start_pos = iter + 1;
 		}
 	}
-
 }
 
 std::set<std::string> ParcerHTML::getLinks() {

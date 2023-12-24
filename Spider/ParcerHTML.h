@@ -12,7 +12,7 @@ private:
 	std::map<std::string, int> Frequencies; // Ќабор дл€ хранени€ частот отдельных слов (пара: слово, количество в векторе)
 public:
 	//ParcerHTML(std::vector<std::string> HTML_strings);
-	ParcerHTML(std::string HTML_strings);
+	ParcerHTML(std::string HTML_strings,std::string SourceLink);
 	std::set<std::string> getLinks();
 	std::string getLine();
 	std::vector<std::string> getWords();

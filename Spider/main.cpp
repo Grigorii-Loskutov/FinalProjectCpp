@@ -61,7 +61,7 @@ int main()
 		client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
 		//std::vector<std::string> response = client.getData();
 		std::string response = client.getData();
-		ParcerHTML parcerHTML(response);
+		ParcerHTML parcerHTML(response, SpiderStarPageURL);
 		std::set<std::string> Links = parcerHTML.getLinks();
 		std::vector<std::string> Words = parcerHTML.getWords();
 		std::map<std::string, int> Frequencies = parcerHTML.getFrequencies();
