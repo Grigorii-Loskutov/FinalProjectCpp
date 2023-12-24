@@ -14,13 +14,15 @@ set(PROJECT_SOURCES
         HTTPclient.cpp
         ParcerHTML.h
         ParcerHTML.cpp
+        database.h
+        database.cpp
         main.cpp
 )
 
 # Поиск и подключение Boost
 find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
 
-add_executable(Spyder ${PROJECT_SOURCES})
+add_executable(Spyder ${PROJECT_SOURCES} "database.h" "database.cpp")
 
 # Включение директорий Boost
 include_directories(${Boost_INCLUDE_DIRS})
