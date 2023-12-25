@@ -77,21 +77,19 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 		std::stringstream response_stream;
 		response_stream << res;
-		//std::cout << res;
+
 		std::string line;
 		while (std::getline(response_stream, line)) {
-			//lines.push_back(line); // для vector
-			//std::cout << line;
 			lines.append(" ");
 			lines.append(line);
 		}
-		//std::cout << lines;
+	
 		// Выполним перекодировку
-		//const std::string UTF8{ "UTF-8" };
-		//std::cout << "Charset = " << charset << std::endl;
-		//std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+		const std::string UTF8{ "UTF-8" };
+		std::cout << "Charset = " << charset << std::endl;
+		std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
 		////std::cout << utf8_line;
-		//lines = std::move(utf8_line);
+		lines = std::move(utf8_line);
 		////std::cout << lines;
 		
 		// Gracefully close the socket
