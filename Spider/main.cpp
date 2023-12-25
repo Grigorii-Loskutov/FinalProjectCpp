@@ -1,5 +1,6 @@
 #include <iostream>
-//#include <pqxx/pqxx>
+#include <tuple>
+#include <pqxx/pqxx>
 #include <windows.h>
 #include <exception>
 #include <string.h>
@@ -7,6 +8,8 @@
 #include "ParcerINI.h"
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
+#include "database.h"
+
 
 std::string DataBaseHostName;
 std::string DataBaseName;
@@ -23,7 +26,7 @@ int FinderPort;
 
 int main()
 {
-	setlocale(LC_ALL, "Russian");
+	//setlocale(LC_ALL, "Russian");
 	SetConsoleCP(65001);
 	SetConsoleOutputCP(65001); //UTF-8
 	// Прочитаем конфигурацию в файле configuration.ini
@@ -57,6 +60,10 @@ int main()
 		std::cout << "FinderAddress: " << FinderAddress << std::endl;
 		std::cout << "FinderPort: " << FinderPort << std::endl;
 
+		database DB;
+		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
+		DB.table_create();
+
 		HTTPclient client;
 		client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
 		//std::vector<std::string> response = client.getData();
@@ -74,7 +81,9 @@ int main()
 		for (const auto& pair : Frequencies) {
 			std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
 			++counter;
+			DB.word_add(pair.first);
 		}
+
 
 	}
 	catch (const std::exception& ex) {
@@ -82,6 +91,5 @@ int main()
 		std::cout << "\n" << except;
 		//std::cout << ex.what() << std::endl;
 	}
-
 }
 
