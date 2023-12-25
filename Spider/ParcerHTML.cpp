@@ -17,22 +17,10 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
 	// Регулярное выражение дл¤ поиска ссылок в HTML
-	//std::regex LINKpattern("<a href=[^>]+(?=\/?>|$)");  // href= - начало, не включет >, заканчиваетс¤ на /> или >
-	//std::regex LINKpattern("<a href=[^>]+(?=\/?>)");
 	std::regex LINKpattern("<a href=[^>]*>");
-	//std::regex LINKpattern("<a href=\"(.*?)\"");
+	
 
-	// Регулярное выражение для поиска текста
-	//std::regex WORDpattern(">([^<>]+)<");
-	//std::regex WORDpattern(">([^<]+)<");
-	//std::regex notWORDpattern("<.*>");
-	/*std::string superString;
-	for (const auto& line : HTML_strings) {
-		superString.append(line);
-	}*/
-	//std::cout << superString;
-	//for (const auto& line : HTML_strings) {
-		// »тераторы дл¤ поиска совпадений
+	// Итераторы дл¤ поиска совпадений
 	std::sregex_iterator it_link(HTML_strings.begin(), HTML_strings.end(), LINKpattern);
 	std::sregex_iterator end_link;
 	while (it_link != end_link) {
@@ -41,9 +29,9 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		match_str = match_str.substr(8);
 		match_str = match_str.substr(0, match_str.size() - 1);
 		//std::cout << "Found link: " << match_str << std::endl;
-		// 
+		
 		// Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
-		// поэтому нужно внутренние сслыки дполнить полным адресом
+		// поэтому нужно внутренние сслыки дополнить полным адресом
 		std::string const http_pref = "http://";
 		if (match_str.length() >= http_pref.length() &&
 			match_str.compare(0, http_pref.length(), http_pref) != 0) {
@@ -75,10 +63,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	// Удаление лишних пробелов
 	std::regex SPACEpattern(R"(\s+)");
 	Line = std::regex_replace(Line, SPACEpattern, "_");
-
-	//// Удаление слов длиной менее 3х символов  R"(\b\w{1,3}\b)"
-	//std::regex pattern_short_words(R"(_.{1,3}_)");
-	//Words = std::regex_replace(Words, pattern_short_words, "_");
 
 	// Переведем в нижний регистр
 	for (char& c : Line) {
