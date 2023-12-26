@@ -13,10 +13,10 @@ private:
 	std::string str_creation = {
 			"CREATE TABLE IF NOT EXISTS links ("
 			"id SERIAL PRIMARY KEY, "
-			"link VARCHAR(100) NOT NULL); "
+			"link VARCHAR(100) UNIQUE NOT NULL); "
 			"CREATE TABLE IF NOT EXISTS words ("
 			"id SERIAL PRIMARY KEY, "
-			"word VARCHAR(40) NOT NULL); "
+			"word VARCHAR(40) UNIQUE NOT NULL); "
 			"CREATE TABLE IF NOT EXISTS frequencies ("
 			"links_id INTEGER REFERENCES links(id), "
 			"words_id INTEGER REFERENCES words(id), "
