@@ -59,37 +59,59 @@ int main()
 		std::cout << "SpiderDepth: " << SpiderDepth << std::endl;
 		std::cout << "FinderAddress: " << FinderAddress << std::endl;
 		std::cout << "FinderPort: " << FinderPort << std::endl;
+	}
+	catch (const std::exception& ex) {
 
-		database DB;
+		std::string except = ex.what();
+		std::cout << "\n" << except;
+	}
+
+	// Создадим подключение к базе данных
+	database DB;
+	try {
 		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
 		DB.table_create();
+	}
+	catch (const std::exception& ex) {
+		std::cout << "Try to create tables in databse\n";
+		std::string except = ex.what();
+		std::cout << "\n" << except;
+	}
 
-		HTTPclient client;
+	// Создадим HTTP client
+	HTTPclient client;
+	try {
+
 		client.performGetRequest(SpiderStarPageURL, "80", "/", 5);
-		//std::vector<std::string> response = client.getData();
 		std::string response = client.getData();
 		ParcerHTML parcerHTML(response, SpiderStarPageURL);
 		std::set<std::string> Links = parcerHTML.getLinks();
-		std::vector<std::string> Words = parcerHTML.getWords();
 		std::map<std::string, int> Frequencies = parcerHTML.getFrequencies();
+
+
 		for (const auto& line : Links) {
 			std::cout << line << std::endl;
 		}
-		//std::cout << Words << std::endl;
-		//std::cout << response;
 		unsigned int counter = 0;
 		for (const auto& pair : Frequencies) {
 			std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
 			++counter;
-			DB.word_add(pair.first);
+			// Запись в database под отдельный try
+			try {
+				DB.word_add(pair.first);
+			}
+			catch (const std::exception& ex) {
+				std::string except = ex.what();
+				std::cout << "\n" << except;
+			}
+
 		}
-
-
 	}
 	catch (const std::exception& ex) {
+		std::cout << "Try to load HTML and parce it\n";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
-		//std::cout << ex.what() << std::endl;
+		std::cout << "Паук отработал и не упал" << std::endl;
+
 	}
 }
-
