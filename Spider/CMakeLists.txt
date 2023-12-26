@@ -16,6 +16,8 @@ set(PROJECT_SOURCES
         ParcerHTML.cpp
         database.h
         database.cpp
+        indexator.h
+        indexator.cpp
         main.cpp
 )
 
