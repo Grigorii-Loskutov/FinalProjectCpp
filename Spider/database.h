@@ -1,10 +1,9 @@
 #pragma once
 
-#include <iostream>
+
 #include <pqxx/pqxx>
-#include <exception>
-#include <tuple>
 #include <windows.h>
+#include <set>
 
 class database {
 private:
@@ -16,12 +15,12 @@ private:
 			"link VARCHAR(100) UNIQUE NOT NULL); "
 			"CREATE TABLE IF NOT EXISTS words ("
 			"id SERIAL PRIMARY KEY, "
-			"word VARCHAR(40) UNIQUE NOT NULL); "
+			"word VARCHAR(20) UNIQUE NOT NULL); "
 			"CREATE TABLE IF NOT EXISTS frequencies ("
 			"links_id INTEGER REFERENCES links(id), "
 			"words_id INTEGER REFERENCES words(id), "
 			"frequency INTEGER, "
-			"CONSTRAINT pk PRIMARY KEY(links_id, words_id));"	
+			"CONSTRAINT pk PRIMARY KEY(links_id, words_id));"
 	};
 
 public:
@@ -41,6 +40,12 @@ public:
 	database& operator=(const database&) = delete; // Запретим копирование
 
 	void word_add(const std::string newWord);
-	
+
 	void link_add(const std::string newLink);
+
+	std::map < std::string, int> getWordId();
+
+	int getLinkId(const std::string& linkValue);
+
+	void frequency_add(const int linkID, const int wordID, const int frequency);
 };

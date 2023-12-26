@@ -48,3 +48,41 @@ void database::link_add(const std::string newLink) {
 	tx.exec(str_link_add);
 	tx.commit();
 }
+
+std::map <std::string, int> database::getWordId() {
+	std::map<std::string, int> wordIdMap;
+	pqxx::work tx{ *c };
+	std::string select_word_id_pair = ("SELECT id, word FROM Words");
+	pqxx::result result = tx.exec(select_word_id_pair);
+	for (size_t row = 0; row < result.size(); ++row) {
+		int id = result[row].at("id").as<int>();
+		std::string word = result[row].at("word").as<std::string>();
+		wordIdMap[word] = id;
+	}
+	return wordIdMap;
+}
+
+int database::getLinkId(const std::string& linkValue) {
+	pqxx::work tx{ *c };
+	std::string select_link_id = "SELECT id FROM Links WHERE link = '" + tx.esc(linkValue) + "'";
+	pqxx::result result = tx.exec(select_link_id);
+	int id = result[0][0].as<int>();
+	if (!result.empty()) {
+		int id = result[0][0].as<int>();
+		return id;
+	}
+	else {
+		// Если результат пустой, вернуть -1 или другое значение по умолчанию
+		return -1;
+	}
+}
+
+void database::frequency_add(const int linkID, const int wordID, const int frequency) {
+	pqxx::work tx{ *c };
+	std::string insert_frequency = "INSERT INTO frequencies (links_id, words_id, frequency) VALUES ("
+		+ tx.quote(linkID) + ", "
+		+ tx.quote(wordID) + ", "
+		+ tx.quote(frequency) + ")";
+	tx.exec(insert_frequency);
+	tx.commit();
+}
