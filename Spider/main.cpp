@@ -174,6 +174,5 @@ int main()
 			std::cout << "\n" << except;
 		}
 	}
-
 	std::cout << "Паук отработал и не упал" << std::endl;
 }
