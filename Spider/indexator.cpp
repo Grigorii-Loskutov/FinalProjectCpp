@@ -8,10 +8,15 @@
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
 
+std::set<std::string> Links; // РќР°Р±РѕСЂ СЃСЃС‹Р»РѕРє, РЅР°Р№РґРµРЅРЅС‹С… РЅР° СЃС‚СЂР°РЅРёС†Рµ
+std::map<std::string, int> Frequencies; // Р§Р°СЃС‚РѕС‚С‹ СЃР»РѕРІ, РЅР°Р№РґРµРЅРЅС‹С… РЅР° СЃС‚СЂР°РЅРёС†Рµ
+int link_id; // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚СЂР°РЅРёС†С‹, РєРѕС‚РѕСЂСѓСЋ РёРЅРґРµРєСЃРёСЂСѓРµРј
+std::map<std::string, int> WordIdPair; // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ Рё СЃРѕРѕС‚РІРµС‚СЃРІСѓСЋС‰РёРµ СЃР»РѕРІР° РІ С‚Р°Р±Р»РёС†Рµ
+
 std::set<std::string> indexator(database& DB, std::string inLink) {
 
 	try {
-
+		HTTPclient client; // РљР»РёРµРЅС‚ РґР»СЏ СЃРєР°С‡РёРІР°РЅРёСЏ СЃС‚СЂР°РЅРёС†С‹
 		client.performGetRequest(inLink, "80", "/", 5);
 		std::string response = client.getData();
 		ParcerHTML parcerHTML(response, inLink);
@@ -24,7 +29,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		}
 
 
-		// Запишем адресс страницы, которую проиндексировали
+		// Р—Р°РїРёС€РµРј Р°РґСЂРµСЃСЃ СЃС‚СЂР°РЅРёС†С‹, РєРѕС‚РѕСЂСѓСЋ РїСЂРѕРёРЅРґРµРєСЃРёСЂРѕРІР°Р»Рё
 		try
 		{
 			DB.link_add(inLink);
@@ -39,7 +44,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		for (const auto& pair : Frequencies) {
 			//std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
 			//++counter;
-			// Запись в database под отдельный try
+			// Р—Р°РїРёСЃСЊ РІ database РїРѕРґ РѕС‚РґРµР»СЊРЅС‹Р№ try
 			try {
 				DB.word_add(pair.first);
 			}
@@ -56,9 +61,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 
 	}
 
-	// Вносим в базу данных частоты слов для определенной страницы
+	// Р’РЅРѕСЃРёРј РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… С‡Р°СЃС‚РѕС‚С‹ СЃР»РѕРІ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРЅРѕР№ СЃС‚СЂР°РЅРёС†С‹
 
-	// Получим таблицу слов с id целиком
+	// РџРѕР»СѓС‡РёРј С‚Р°Р±Р»РёС†Сѓ СЃР»РѕРІ СЃ id С†РµР»РёРєРѕРј
 	try {
 		WordIdPair = DB.getWordId();
 	}
@@ -68,14 +73,14 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		std::cout << "\n" << except;
 	}
 
-	// Выведем таблицу
+	// Р’С‹РІРµРґРµРј С‚Р°Р±Р»РёС†Сѓ
 	unsigned int counter = 0;
 	for (const auto& pair : WordIdPair) {
 		std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
 		++counter;
 	}
 
-	// Получим id страницы, которую индексируем
+	// РџРѕР»СѓС‡РёРј id СЃС‚СЂР°РЅРёС†С‹, РєРѕС‚РѕСЂСѓСЋ РёРЅРґРµРєСЃРёСЂСѓРµРј
 	try {
 		link_id = DB.getLinkId(inLink);
 		std::cout << inLink << " id = " << link_id << std::endl;
@@ -85,7 +90,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
-	//Заполним таблицу частот
+	//Р—Р°РїРѕР»РЅРёРј С‚Р°Р±Р»РёС†Сѓ С‡Р°СЃС‚РѕС‚
 	for (const auto& pair : Frequencies) {
 		//std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
 		//++counter;
@@ -99,6 +104,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			std::cout << "\n" << except;
 		}
 	}
-	std::cout << "Индексатор отработал и не упал" << std::endl;
+	std::cout << "РРЅРґРµРєСЃР°С‚РѕСЂ РѕС‚СЂР°Р±РѕС‚Р°Р» Рё РЅРµ СѓРїР°Р»" << std::endl;
 	return Links;
-}
+};
