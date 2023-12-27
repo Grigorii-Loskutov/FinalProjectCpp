@@ -16,11 +16,11 @@
 ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
-	// Регулярное выражение дл¤ поиска ссылок в HTML
+	// Регулярное выражение для поиска ссылок в HTML
 	std::regex LINKpattern("<a href=[^>]*>");
 	
 
-	// Итераторы дл¤ поиска совпадений
+	// Итераторы для поиска совпадений
 	std::sregex_iterator it_link(HTML_strings.begin(), HTML_strings.end(), LINKpattern);
 	std::sregex_iterator end_link;
 	while (it_link != end_link) {
@@ -35,8 +35,11 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		std::string const http_pref = "http://";
 		if (match_str.length() >= http_pref.length() &&
 			match_str.compare(0, http_pref.length(), http_pref) != 0) {
-			match_str = http_pref + SourceLink + match_str;
+			match_str = SourceLink + match_str;
 			//std::cout << "Formatted link: " << match_str << std::endl;
+		}
+		else {
+			match_str = match_str.substr(http_pref.length(), match_str.length());
 		}
 		// Желательно проверить, что SourceLink не содержится на странице, чтобы бесконечно ее не добавлять
 		Links.insert(match_str);
@@ -84,7 +87,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	}*/
 
 
-	// Заполним наборя для хранения частот
+	// Заполним набор для хранения частот
 	/*for (const auto& word_iter : Words) {
 		Frequencies[word_iter]++;
 	}*/
