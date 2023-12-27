@@ -34,6 +34,10 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		try {
 			// Look up the domain name
 			auto const results = resolver.resolve(host, port);
+			for (const auto& result : results) {
+				std::cout << "Host: " << result.endpoint().address().to_string() << std::endl;
+				std::cout << "Port: " << result.endpoint().port() << std::endl;
+			}
 
 			// Make the connection on the IP address we get from a lookup
 			stream.connect(results);
