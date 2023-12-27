@@ -22,6 +22,11 @@ private:
 			"frequency INTEGER, "
 			"CONSTRAINT pk PRIMARY KEY(links_id, words_id));"
 	};
+	std::string str_delete = {
+			"DROP TABLE IF EXISTS frequencies; "
+			"DROP TABLE IF EXISTS words; "
+			"DROP TABLE IF EXISTS links;"
+	};
 
 public:
 	database();
@@ -33,6 +38,8 @@ public:
 		int DataBasePort);
 
 	void table_create();
+
+	void table_delete();
 
 
 	database(const database&) = delete; // Запретим копирование
@@ -48,4 +55,5 @@ public:
 	int getLinkId(const std::string& linkValue);
 
 	void frequency_add(const int linkID, const int wordID, const int frequency);
+
 };

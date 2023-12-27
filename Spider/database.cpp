@@ -35,6 +35,13 @@ void database::table_create() {
 	tx.commit();
 }
 
+void database::table_delete() {
+	pqxx::work tx{ *c };
+	tx.exec(str_delete);
+	tx.commit();
+}
+
+
 void database::word_add(const std::string newWord) {
 	pqxx::work tx{ *c };
 	std::string str_word_add = "INSERT INTO Words (word) VALUES ('" + tx.esc(newWord) + "')";
