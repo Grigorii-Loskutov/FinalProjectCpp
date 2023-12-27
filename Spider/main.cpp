@@ -6,10 +6,96 @@
 #include <string.h>
 #include <thread>
 #include "ParcerINI.h"
-//#include "HTTPclient.h"
-//#include "ParcerHTML.h"
 #include "database.h"
 #include "indexator.h"
+
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <queue>
+
+
+class safe_queue {
+
+	std::queue<std::function<void()>> tasks;	//очередь для хранения задач
+	std::mutex mutex;							//для реализации блокировки
+	std::condition_variable cv;					//для уведомлений
+
+
+public:
+	int getTaskSize() {
+		return tasks.size();
+	}
+	std::mutex& getMutex() {
+		return mutex;
+	}
+	std::condition_variable& getCond() {
+		return cv;
+	}
+	//Метод push записывает в начало очереди новую задачу.
+	//При этом захватывает мьютекс, а после окончания операции нотифицируется условная переменная.
+	void push(std::function<void()> task) {
+		std::unique_lock<std::mutex> lock(mutex);
+		tasks.push(task);
+		cv.notify_one();
+	}
+	//Метод pop находится в ожидании, пока не придут уведомление на условную переменную.
+	//При нотификации условной переменной данные считываются из очереди.
+	std::function<void()> pop() {
+		std::unique_lock<std::mutex> lock(mutex);
+		cv.wait(lock, [this] { return !tasks.empty(); });
+		auto task = tasks.front();
+		tasks.pop();
+		return task;
+	}
+
+};
+
+
+class thread_pool {
+	safe_queue task_queue;
+	std::vector<std::thread> threads;
+	bool stop;
+public:
+	thread_pool(size_t num_threads) : stop(false) {
+		for (size_t i = 0; i < num_threads; ++i) {
+			threads.emplace_back([this]() {
+				while (task_queue.getTaskSize() > 0) {
+					auto task = task_queue.pop();
+					task();
+				}
+				});
+		}
+		/*for (size_t i = 0; i < num_threads; ++i) {
+			threads.emplace_back(std::thread(&thread_pool::work));
+		}*/
+	}
+	~thread_pool() {
+		for (auto& thread : threads) {
+			if (thread.joinable()) { thread.join(); }
+		}
+		stop = true;
+	}
+	//Метод submit помещает в очередь очередную задачу.
+	//В качестве принимаемого аргумента метод может принимать или объект шаблона std::function, или объект шаблона package_task.
+	template <typename Func, typename... Args>
+	void submit(Func&& func, Args&&... args) {
+		task_queue.push(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
+	}
+
+	//Метод work выбирает из очереди очередную задачи и исполняет ее.
+	//Данный метод передается конструктору потоков для исполнения
+	void work() {
+		while (task_queue.getTaskSize() > 0) {
+			auto task = task_queue.pop();
+			task();
+		}
+	}
+};
+
+
 
 std::string DataBaseHostName;
 std::string DataBaseName;
@@ -67,6 +153,7 @@ int main()
 	}
 
 	// Создадим подключение к базе данных
+	thread_pool task_queue(16);
 	database DB;
 	try {
 		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
@@ -79,6 +166,22 @@ int main()
 	}
 
 	//Тестовая индексация
-	std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
+	//std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
 
+	int threads_num = std::thread::hardware_concurrency();
+	thread_pool pool(threads_num);
+	std::set<std::string> indexator_result{ "www.lib.ru", "www.mail.ru", "4put.ru", "www.yandex.ru"};
+	// Основной поток выполняет задачи из indexator_result
+	std::thread T1 = std::thread([&pool, indexator_result, &DB]() mutable {
+		for (const auto& newLink : indexator_result) {
+			pool.submit([&DB, newLink] {
+				std::cout << "Task submitted for: " << newLink << std::endl;
+				indexator(DB, newLink);
+				//std::this_thread::sleep_for(std::chrono::seconds(1));
+				});
+		}
+		});
+	T1.join(); // Завершения основного потока
+	std::thread T2 = std::thread([&pool] {pool.work(); });
+	T2.join();
 }
