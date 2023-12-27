@@ -18,7 +18,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 
 	// Регулярное выражение для поиска ссылок в HTML
 	std::regex LINKpattern("<a href=[^>]*>");
-	
+
 
 	// Итераторы для поиска совпадений
 	std::sregex_iterator it_link(HTML_strings.begin(), HTML_strings.end(), LINKpattern);
@@ -29,13 +29,13 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		match_str = match_str.substr(8);
 		match_str = match_str.substr(0, match_str.size() - 1);
 		//std::cout << "Found link: " << match_str << std::endl;
-		
+
 		// Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
 		// поэтому нужно внутренние сслыки дополнить полным адресом
 		std::string const http_pref = "http://";
 		if (match_str.length() >= http_pref.length() &&
 			match_str.compare(0, http_pref.length(), http_pref) != 0) {
-			match_str = SourceLink + match_str;
+			match_str = SourceLink + "/" + match_str;
 			//std::cout << "Formatted link: " << match_str << std::endl;
 		}
 		else {
@@ -61,7 +61,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 
 	// Удаление чисел
 	std::regex pattern_numbers(R"(\b\d+\b)");
-	Line = std::regex_replace(Line, pattern_numbers," ");
+	Line = std::regex_replace(Line, pattern_numbers, " ");
 
 	// Удаление лишних пробелов
 	std::regex SPACEpattern(R"(\s+)");
@@ -73,7 +73,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	}
 
 	// Выделим отдельные слова и большой строки, разделенной "_"
-	/*unsigned int cut_end_pos{ 0 }; 
+	/*unsigned int cut_end_pos{ 0 };
 	unsigned int cut_start_pos{ 0 };
 	for (unsigned int iter = 0; iter < Line.length();++iter) {
 		if (Line[iter] == '_') {
