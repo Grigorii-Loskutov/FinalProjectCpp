@@ -31,12 +31,17 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		tcp::resolver resolver(ioc);
 		beast::tcp_stream stream(ioc);
 
-		// Look up the domain name
-		auto const results = resolver.resolve(host, port);
+		try {
+			// Look up the domain name
+			auto const results = resolver.resolve(host, port);
 
-		// Make the connection on the IP address we get from a lookup
-		stream.connect(results);
-
+			// Make the connection on the IP address we get from a lookup
+			stream.connect(results);
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Error during DNS resolution: " << e.what() << std::endl;
+			// Обработка ошибки или выполнение других действий при возникновении исключения
+		}
 		// Set up an HTTP GET request message
 		http::request<http::string_body> req{ http::verb::get, target, version };
 		req.set(http::field::host, host);
