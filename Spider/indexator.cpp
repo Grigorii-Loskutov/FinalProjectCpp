@@ -23,7 +23,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		Links = parcerHTML.getLinks();
 		Frequencies = parcerHTML.getFrequencies();
 
-
+		// Выведем найденные ссылки
 		for (const auto& line : Links) {
 			std::cout << line << std::endl;
 		}
@@ -49,6 +49,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.word_add(pair.first);
 			}
 			catch (const std::exception& ex) {
+				std::cout << "Try to add new word in database\n";
 				std::string except = ex.what();
 				std::cout << "\n" << except;
 			}
@@ -74,11 +75,11 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	}
 
 	// Выведем таблицу
-	unsigned int counter = 0;
-	for (const auto& pair : WordIdPair) {
-		std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
-		++counter;
-	}
+	//unsigned int counter = 0;
+	//for (const auto& pair : WordIdPair) {
+	//	std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
+	//	++counter;
+	//}
 
 	// Получим id страницы, которую индексируем
 	try {
