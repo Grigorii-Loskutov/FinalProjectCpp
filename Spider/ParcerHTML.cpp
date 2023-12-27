@@ -35,11 +35,18 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		std::string const http_pref = "http://";
 		if (match_str.length() >= http_pref.length() &&
 			match_str.compare(0, http_pref.length(), http_pref) != 0) {
-			match_str = SourceLink + "/" + match_str;
-			//std::cout << "Formatted link: " << match_str << std::endl;
+			if (match_str[0] == '/') {
+				match_str = SourceLink + match_str;
+			}
+			else {
+				match_str = SourceLink + "/" + match_str;
+			}
 		}
 		else {
-			match_str = match_str.substr(http_pref.length(), match_str.length());
+			match_str = match_str.substr(http_pref.length(), match_str.length() - 1); // Удалим префикс "http://"
+		}
+		if (match_str[match_str.length() - 1] == '/') {
+			match_str = match_str.substr(0, match_str.length() - 2); // Удалим лишний "/" в конце
 		}
 		// Желательно проверить, что SourceLink не содержится на странице, чтобы бесконечно ее не добавлять
 		Links.insert(match_str);
