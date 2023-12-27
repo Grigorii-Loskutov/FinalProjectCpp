@@ -17,8 +17,11 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 
 	try {
 		HTTPclient client; // Клиент для скачивания страницы
-		client.performGetRequest(inLink, "80", "/", 5);
-		std::string response = client.getData();
+		std::string response = ""; // Строка с ответом
+		if (client.performGetRequest(inLink, "80", "/", 5) == 0)
+		{
+			response = client.getData();
+		}
 		ParcerHTML parcerHTML(response, inLink);
 		Links = parcerHTML.getLinks();
 		Frequencies = parcerHTML.getFrequencies();
@@ -49,9 +52,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.word_add(pair.first);
 			}
 			catch (const std::exception& ex) {
-				std::cout << "Try to add new word in database\n";
+				//std::cout << "Try to add new word in database\n";
 				std::string except = ex.what();
-				std::cout << "\n" << except;
+				//std::cout << "\n" << except;
 			}
 		}
 	}
@@ -101,10 +104,11 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.frequency_add(link_id, wordId, wordFrequency);
 		}
 		catch (const std::exception& ex) {
+			//std::cout << "Try to add frequency\n";
 			std::string except = ex.what();
-			std::cout << "\n" << except;
+			//std::cout << "\n" << except;
 		}
 	}
-	std::cout << "Индексатор отработал и не упал" << std::endl;
+	std::cout << "\n Индексатор отработал и не упал \n" << std::endl;
 	return Links;
 };
