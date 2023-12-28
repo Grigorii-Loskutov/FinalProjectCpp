@@ -7,51 +7,19 @@
 #include <regex>
 #include <boost/locale.hpp>
 #include <boost/locale/conversion.hpp>
-
+#include "gumbo.h"
 
 #define STRINGIZE(x) #x
 #define TO_STRING(x) STRINGIZE(x)
 
 //ParcerHTML::ParcerHTML(std::vector<std::string> HTML_strings) {
 ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
-	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
+	if (HTML_strings.length() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
-	// Регулярное выражение для поиска ссылок в HTML
-	//std::regex LINKpattern(R"(<a href=\"[^">]*\">)");
-	std::regex LINKpattern(R"(<a href=[^>]*>)");
+	GumboOutput* output = gumbo_parse(HTML_strings.c_str());
+	findLinks(output->root, SourceLink);
 
-	// Итераторы для поиска совпадений
-	std::sregex_iterator it_link(HTML_strings.begin(), HTML_strings.end(), LINKpattern);
-	std::sregex_iterator end_link;
-	while (it_link != end_link) {
-		std::smatch match = *it_link;
-		std::string match_str = match.str();
-		match_str = match_str.substr(8);
-		match_str = match_str.substr(0, match_str.size() - 1);
-		//std::cout << "Found link: " << match_str << std::endl;
-
-		// Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
-		// поэтому нужно внутренние сслыки дополнить полным адресом
-		std::string const http_pref = "http://";
-		if (match_str.length() >= http_pref.length() &&
-			match_str.compare(0, http_pref.length(), http_pref) != 0) {
-			if (match_str[0] == '/') {
-				match_str = SourceLink + match_str;
-			}
-			else {
-				match_str = SourceLink + "/" + match_str;
-			}
-		}
-		else {
-			match_str = match_str.substr(http_pref.length(), match_str.length() - 1); // Удалим префикс "http://"
-		}
-		if (match_str[match_str.length() - 1] == '/') {
-			match_str = match_str.substr(0, match_str.length() - 2); // Удалим лишний "/" в конце
-		}
-		// Желательно проверить, что SourceLink не содержится на странице, чтобы бесконечно ее не добавлять
-		Links.insert(match_str);
-		++it_link;
-	}
+	gumbo_destroy_output(&kGumboDefaultOptions, output);
 
 	//std::regex tagRegex("<[^>]*>");
 	// Удаление html информации в <>
@@ -110,4 +78,38 @@ std::vector<std::string> ParcerHTML::getWords() {
 
 std::map<std::string, int> ParcerHTML::getFrequencies() {
 	return Frequencies;
+}
+
+void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
+	if (node->type == GUMBO_NODE_ELEMENT) {
+		GumboAttribute* href;
+		if ((href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
+			std::string link = href->value;
+			if (!link.empty()) {
+				//Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
+				 //поэтому нужно внутренние сслыки дополнить полным адресом
+				std::string const http_pref = "http://";
+				if ((link.length() >= http_pref.length() &&
+					link.compare(0, http_pref.length(), http_pref) != 0) || (link.length() < http_pref.length())) {
+					if (link[0] == '/') {
+						link = SourceLink + link;
+					}
+					else {
+						link = SourceLink + "/" + link;
+					}
+				}
+				std::regex pattern_http(http_pref);
+				link = std::regex_replace(link, pattern_http, "");
+				std::regex pattern_slash(R"(/$)");
+				link = std::regex_replace(link, pattern_slash, "");
+				Links.insert(link);
+			}
+		}
+	}
+	if (node->type == GUMBO_NODE_ELEMENT || node->type == GUMBO_NODE_DOCUMENT) {
+		GumboVector* children = &node->v.element.children;
+		for (unsigned int i = 0; i < children->length; ++i) {
+			findLinks(static_cast<GumboNode*>(children->data[i]), SourceLink);
+		}
+	}
 }
