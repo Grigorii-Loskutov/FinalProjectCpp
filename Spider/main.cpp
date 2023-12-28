@@ -168,54 +168,10 @@ int main()
 	}
 
 	
-	//std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
+	std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
 
 	int threads_num = std::thread::hardware_concurrency();
 	thread_pool pool(threads_num);
-	//std::set<std::string> indexator_result{ "www.lib.ru", "4put.ru", "www.recself.ru", "artofwar.ru"};
-	//Тестовая индексация
-	std::set<std::string> indexator_result = {
-		"4put.ru",
-		"artofwar.ru",
-		"artofwar.ru/b/bobrov",
-		"artofwar.ru/f/frolow_i_a",
-		"az.lib.ru",
-		"det.lib.ru",
-		"fan.lib.ru",
-		"fan.lib.ru/e/eskov",
-		"fan.lib.ru/g/gromow_a_n",
-		"lib.ru",
-		"lib.ru/~moshkow",
-		"lit.lib.ru/t/ten_w_k",
-		"music.lib.ru",
-		"okopka.ru",
-		"okopka.ru/s/sawenkowa_f",
-		"pressa-voiny.ru",
-		"samlib.ru",
-		"samlib.ru/s/shainjan_k_s",
-		"top100.rambler.ru/top100/Literature",
-		"turizm.lib.ru",
-		"world.lib.ru",
-		"www.artlib.ru",
-		"www.kulichki.com/moshkow",
-		"www.lib.ru",
-		"www.lib.ru/Forum",
-		"www.lib.ru/HISTORY",
-		"www.lib.ru/HITPARAD",
-		"www.lib.ru/INPROZ",
-		"www.lib.ru/POEZIQ",
-		"www.lib.ru/PROZA",
-		"www.lib.ru/RUFANT",
-		"www.lib.ru/RUSS_DETEKTIW",
-		"www.lib.ru/AWARDS",
-		"www.lib.ru/Forum",
-		"www.lib.ru/MEMUARY/DONBASS",
-		"www.lib.ru/Mirrors",
-		"www.lib.ru/What-s-new",
-		"www.litportal.ru",
-		"www.recself.ru"
-	};
-
 	// Основной поток выполняет задачи из indexator_result
 	std::thread T1 = std::thread([&pool, indexator_result, &DB]() mutable {
 		for (const auto& newLink : indexator_result) {
