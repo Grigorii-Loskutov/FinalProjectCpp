@@ -38,9 +38,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.link_add(inLink);
 		}
 		catch (const std::exception& ex) {
-			//std::cout << "Try to add new URL in database\n";
+			std::cout << "Try to add new URL in database\n";
 			std::string except = ex.what();
-			//std::cout << "\n" << except;
+			std::cout << "\n" << except;
 		}
 
 		unsigned int counter = 0;
@@ -52,9 +52,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.word_add(pair.first);
 			}
 			catch (const std::exception& ex) {
-				//std::cout << "Try to add new word in database\n";
+				std::cout << "Try to add new word in database\n";
 				std::string except = ex.what();
-				//std::cout << "\n" << except;
+				std::cout << "\n" << except;
 			}
 		}
 	}
