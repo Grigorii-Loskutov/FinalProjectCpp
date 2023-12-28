@@ -27,7 +27,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		Frequencies = parcerHTML.getFrequencies();
 
 		// Выведем найденные ссылки
+		std::cout << "На странице: " << inLink << " найдены ссылки:" << std::endl;
 		for (const auto& line : Links) {
+
 			std::cout << line << std::endl;
 		}
 
@@ -38,7 +40,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.link_add(inLink);
 		}
 		catch (const std::exception& ex) {
-			std::cout << "\n Try to add new URL in database: ";
+			std::cout << "\n Try to add new URL in database " + inLink << ": ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
@@ -87,10 +89,10 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	// Получим id страницы, которую индексируем
 	try {
 		link_id = DB.getLinkId(inLink);
-		std::cout << inLink << " id = " << link_id << std::endl;
+		//std::cout << inLink << " id = " << link_id << std::endl;
 	}
 	catch (const std::exception& ex) {
-		std::cout << "\n Try to get link id for: " << inLink << std::endl;;
+		std::cout << "\nTry to get link id for " << inLink << ": ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -104,11 +106,11 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.frequency_add(link_id, wordId, wordFrequency);
 		}
 		catch (const std::exception& ex) {
-			std::cout << "\n Try to add frequency: ";
+			std::cout << "\nTry to add frequency: ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
 	}
-	std::cout << "\n Индексатор отработал и не упал" << std::endl;
+	std::cout << "\nИндексатор отработал и не упал" << std::endl;
 	return Links;
 };
