@@ -38,7 +38,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.link_add(inLink);
 		}
 		catch (const std::exception& ex) {
-			std::cout << "Try to add new URL in database\n";
+			std::cout << "\n Try to add new URL in database: ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
@@ -52,14 +52,14 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.word_add(pair.first);
 			}
 			catch (const std::exception& ex) {
-				std::cout << "Try to add new word in database\n";
+				std::cout << "\n Try to add new word in database: ";
 				std::string except = ex.what();
 				std::cout << "\n" << except;
 			}
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << "Try to load HTML and parce it\n";
+		std::cout << "\n Try to load HTML and parce it: ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 
@@ -72,7 +72,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		WordIdPair = DB.getWordId();
 	}
 	catch (const std::exception& ex) {
-		std::cout << "Try to get words id\n";
+		std::cout << "\n Try to get words id: ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -90,7 +90,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		std::cout << inLink << " id = " << link_id << std::endl;
 	}
 	catch (const std::exception& ex) {
-		std::cout << "Try to get link id\n";
+		std::cout << "\n Try to get link id for: " << inLink << std::endl;;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -104,11 +104,11 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.frequency_add(link_id, wordId, wordFrequency);
 		}
 		catch (const std::exception& ex) {
-			//std::cout << "Try to add frequency\n";
+			std::cout << "\n Try to add frequency: ";
 			std::string except = ex.what();
-			//std::cout << "\n" << except;
+			std::cout << "\n" << except;
 		}
 	}
-	std::cout << "\n Индексатор отработал и не упал \n" << std::endl;
+	std::cout << "\n Индексатор отработал и не упал" << std::endl;
 	return Links;
 };
