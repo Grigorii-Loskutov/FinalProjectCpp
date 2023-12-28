@@ -220,7 +220,7 @@ int main()
 	std::thread T1 = std::thread([&pool, indexator_result, &DB]() mutable {
 		for (const auto& newLink : indexator_result) {
 			pool.submit([&DB, newLink] {
-				std::cout << "Task submitted for: " << newLink << std::endl;
+				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
 				indexator(DB, newLink);
 				//std::this_thread::sleep_for(std::chrono::seconds(1));
 				});
