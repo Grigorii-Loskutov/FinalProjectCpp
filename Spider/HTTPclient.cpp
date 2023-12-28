@@ -65,6 +65,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
+		std::cout << "Find charset for page " << host << std::endl;
 		if (contentTypeHeader != res.end()) {
 			std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
 		}
@@ -94,12 +95,14 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		}
 	
 		// Выполним перекодировку
-		const std::string UTF8{ "UTF-8" };
-		std::cout << "Charset = " << charset << std::endl;
-		std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
-		////std::cout << utf8_line;
-		lines = std::move(utf8_line);
-		////std::cout << lines;
+		if(charset.length()!=0)
+		{
+			const std::string UTF8{ "UTF-8" };
+			//std::cout << "Charset = " << charset << std::endl;
+			std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+			////std::cout << utf8_line;
+			lines = std::move(utf8_line);
+		}
 		
 		// Gracefully close the socket
 		beast::error_code ec;
