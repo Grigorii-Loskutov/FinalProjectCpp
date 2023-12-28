@@ -229,4 +229,5 @@ int main()
 	T1.join(); // Завершения основного потока
 	std::thread T2 = std::thread([&pool] {pool.work(); });
 	T2.join();
+	DB.CloseConnection();
 }
