@@ -6,10 +6,10 @@
 
 class ParcerHTML {
 private:
-	std::string Line; // Большая строка со всеми словами, разделенная "_"
-	std::vector<std::string> Words; // Вектор всех слов юольще 3х символов
-	std::set<std::string> Links; // Сопоставление для хранения ссылок, найденных на странице
-	std::map<std::string, int> Frequencies; // Набор для хранения частот отдельных слов (пара: слово, количество в векторе)
+	std::string Line; // Р‘РѕР»СЊС€Р°СЏ СЃС‚СЂРѕРєР° СЃРѕ РІСЃРµРјРё СЃР»РѕРІР°РјРё, СЂР°Р·РґРµР»РµРЅРЅР°СЏ "_"
+	std::vector<std::string> Words; // Р’РµРєС‚РѕСЂ РІСЃРµС… СЃР»РѕРІ СЋРѕР»СЊС‰Рµ 3С… СЃРёРјРІРѕР»РѕРІ
+	std::set<std::string> Links; // РЎРѕРїРѕСЃС‚Р°РІР»РµРЅРёРµ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЃСЃС‹Р»РѕРє, РЅР°Р№РґРµРЅРЅС‹С… РЅР° СЃС‚СЂР°РЅРёС†Рµ
+	std::map<std::string, int> Frequencies; // РќР°Р±РѕСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ С‡Р°СЃС‚РѕС‚ РѕС‚РґРµР»СЊРЅС‹С… СЃР»РѕРІ (РїР°СЂР°: СЃР»РѕРІРѕ, РєРѕР»РёС‡РµСЃС‚РІРѕ РІ РІРµРєС‚РѕСЂРµ)
 public:
 	//ParcerHTML(std::vector<std::string> HTML_strings);
 	ParcerHTML(std::string HTML_strings,std::string SourceLink);
