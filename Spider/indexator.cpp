@@ -21,6 +21,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		if (client.performGetRequest(inLink, "80", "/", 5) == 0)
 		{
 			response = client.getData();
+			//std::cout << response;
 			try
 			{
 				ParcerHTML parcerHTML(response, inLink);
@@ -29,7 +30,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				// Выведем найденные ссылки
 				std::cout << "На странице: " << inLink << " найдены ссылки:" << std::endl;
 				for (const auto& line : Links) {
-					//std::cout << line << std::endl;
+					std::cout << line << std::endl;
 				}
 			}
 			catch (const std::exception& ex) {
