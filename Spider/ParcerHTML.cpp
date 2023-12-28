@@ -34,8 +34,10 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	std::regex pattern_punctuation(R"([[:punct:]()])");
 	Line = std::regex_replace(Line, pattern_punctuation, " ");
 
-	// Удаление чисел
-	std::regex pattern_numbers(R"(\b\d+\b)");
+	// Удаление чисел (всех слов с числами)
+	//std::regex pattern_numbers(R"(\b\d+\b)");
+
+	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
 	Line = std::regex_replace(Line, pattern_numbers, " ");
 
 	// Удаление лишних пробелов
