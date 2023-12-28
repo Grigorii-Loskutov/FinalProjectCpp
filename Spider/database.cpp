@@ -41,6 +41,9 @@ void database::table_delete() {
 	tx.commit();
 }
 
+void database::CloseConnection() {
+	pqxx::work tx{ *c };
+}
 
 void database::word_add(const std::string newWord) {
 	pqxx::work tx{ *c };

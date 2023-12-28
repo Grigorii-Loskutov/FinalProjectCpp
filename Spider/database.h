@@ -41,6 +41,7 @@ public:
 
 	void table_delete();
 
+	void CloseConnection();
 
 	database(const database&) = delete; // Запретим копирование
 
