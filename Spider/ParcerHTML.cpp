@@ -43,9 +43,13 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	Line = std::regex_replace(Line, SPACEpattern, "_");
 
 	// Переведем в нижний регистр
-	for (char& c : Line) {
-		c = std::tolower(c);
-	}
+	//for (char& c : Line) {
+	//	c = std::tolower(c);
+	//}
+
+	boost::locale::generator gen;
+	std::locale loc = gen(""); // Используем локаль по умолчанию
+	Line = boost::locale::to_lower(Line, loc);
 
 	// Заполним набор для хранения частот
 
