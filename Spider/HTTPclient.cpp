@@ -43,7 +43,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 			stream.connect(results);
 		}
 		catch (const std::exception& e) {
-			std::cerr << "Error during DNS resolution: " << e.what() << std::endl;
+			std::cerr << "Error during DNS resolution for " << host << e.what() << std::endl;
 			// Обработка ошибки или выполнение других действий при возникновении исключения
 		}
 		// Set up an HTTP GET request message
@@ -93,9 +93,9 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 			lines.append(" ");
 			lines.append(line);
 		}
-	
+
 		// Выполним перекодировку
-		if(charset.length()!=0)
+		if (charset.length() != 0)
 		{
 			const std::string UTF8{ "UTF-8" };
 			//std::cout << "Charset = " << charset << std::endl;
@@ -103,7 +103,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 			////std::cout << utf8_line;
 			lines = std::move(utf8_line);
 		}
-		
+
 		// Gracefully close the socket
 		beast::error_code ec;
 		stream.socket().shutdown(tcp::socket::shutdown_both, ec);
