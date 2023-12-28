@@ -30,7 +30,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				// Выведем найденные ссылки
 				std::cout << "На странице: " << inLink << " найдены ссылки:" << std::endl;
 				for (const auto& line : Links) {
-					std::cout << line << std::endl;
+					//std::cout << line << std::endl;
 				}
 			}
 			catch (const std::exception& ex) {
