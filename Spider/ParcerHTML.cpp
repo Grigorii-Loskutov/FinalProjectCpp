@@ -17,8 +17,8 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	if (HTML_strings.size() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
 	// Регулярное выражение для поиска ссылок в HTML
-	std::regex LINKpattern("<a href=[^>]*>");
-
+	std::regex LINKpattern(R"(<a href=\"[^">]*\">)");
+	//std::regex LINKpattern(R"(<a href=[^>]*>)");
 
 	// Итераторы для поиска совпадений
 	std::sregex_iterator it_link(HTML_strings.begin(), HTML_strings.end(), LINKpattern);
