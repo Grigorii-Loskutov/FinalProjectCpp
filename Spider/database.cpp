@@ -89,7 +89,7 @@ void database::frequency_add(const int linkID, const int wordID, const int frequ
 	std::string insert_frequency = "INSERT INTO frequencies (links_id, words_id, frequency) VALUES ("
 		+ tx.quote(linkID) + ", "
 		+ tx.quote(wordID) + ", "
-		+ tx.quote(frequency) + ")";
+		+ tx.quote(frequency) + ") ON CONFLICT (links_id, words_id) DO NOTHING;";
 	tx.exec(insert_frequency);
 	tx.commit();
 }
