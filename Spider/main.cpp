@@ -153,7 +153,7 @@ int main()
 	}
 
 	// Создадим подключение к базе данных
-	thread_pool task_queue(16);
+	thread_pool task_queue(100);
 	database DB;
 
 	try {
