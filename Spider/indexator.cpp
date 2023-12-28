@@ -106,7 +106,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			DB.frequency_add(link_id, wordId, wordFrequency);
 		}
 		catch (const std::exception& ex) {
-			std::cout << "\nTry to add frequency: ";
+			std::cout << "\nTry to add frequency for word " << pair.first << ": ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
