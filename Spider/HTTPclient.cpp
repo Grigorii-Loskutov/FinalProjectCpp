@@ -34,10 +34,10 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		try {
 			// Look up the domain name
 			auto const results = resolver.resolve(host, port);
-			for (const auto& result : results) {
+			/*for (const auto& result : results) {
 				std::cout << "Host: " << result.endpoint().address().to_string() << std::endl;
 				std::cout << "Port: " << result.endpoint().port() << std::endl;
-			}
+			}*/
 
 			// Make the connection on the IP address we get from a lookup
 			stream.connect(results);
@@ -67,10 +67,10 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		auto contentTypeHeader = res.find("Content-Type");
 		std::cout << "Find charset for page " << host << std::endl;
 		if (contentTypeHeader != res.end()) {
-			std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
+		//	std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
 		}
 		else {
-			std::cout << "Content-Type header not found" << std::endl;
+		//	std::cout << "Content-Type header not found" << std::endl;
 		}
 		std::string TypeHeaderStr = contentTypeHeader->value();
 		std::regex charsetPattern(R"(charset=([^\s;]+))");
@@ -81,7 +81,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
 			if (match.size() > 1) {
 				charset = match[1];
-				std::cout << "Найден charset: " << charset << std::endl;
+		//		std::cout << "Найден charset: " << charset << std::endl;
 			}
 		}
 

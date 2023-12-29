@@ -28,7 +28,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				Links = parcerHTML.getLinks();
 				Frequencies = parcerHTML.getFrequencies();
 				// Выведем найденные ссылки
-				std::cout << "На странице: " << inLink << " найдены ссылки:" << std::endl;
+				//std::cout << "На странице: " << inLink << " найдены ссылки:" << std::endl;
 				for (const auto& line : Links) {
 					//std::cout << line << std::endl;
 				}
@@ -114,6 +114,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		std::cout << "\n" << except;
 
 	}
-	std::cout << "\nИндексатор отработал и не упал" << std::endl;
+	//std::cout << "\nИндексатор отработал и не упал" << std::endl;
 	return Links;
 };
