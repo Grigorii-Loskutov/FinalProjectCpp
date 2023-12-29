@@ -153,7 +153,6 @@ int main()
 	}
 
 	// Создадим подключение к базе данных
-	thread_pool task_queue(100);
 	database DB;
 
 	try {
@@ -167,18 +166,34 @@ int main()
 		std::cout << "\n" << except;
 	}
 
-	
+	// Запустим индексатор для первой страницы поиска
 	std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
 
+	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
+
+	// Создадим очередь потоков
+	thread_pool task_queue(100);
+
+	// Создадим пул потоков по количеству логических процессоров
 	thread_pool pool(threads_num);
+
+	//std::vector<std::set<std::string>> links_for_parcing;
+
 	// Основной поток выполняет задачи из indexator_result
 	std::thread T1 = std::thread([&pool, indexator_result, &DB]() mutable {
 		for (const auto& newLink : indexator_result) {
-			pool.submit([&DB, newLink] {
+			pool.submit([&DB, newLink, &pool] {
 				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
-				indexator(DB, newLink);
-				//std::this_thread::sleep_for(std::chrono::seconds(1));
+				std::set<std::string> result = indexator(DB, newLink);
+				for (auto const& str : result) {
+					//std::cout << str << std::endl;
+					pool.submit([&DB, str] {
+						std::cout << "\n\tTask submitted for: " << str << std::endl;
+						std::set<std::string> result = indexator(DB, str);
+						// Здесь может быть ваша логика для работы с полученными данными
+						});
+				}
 				});
 		}
 		});
