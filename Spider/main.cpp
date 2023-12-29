@@ -136,7 +136,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 			outLinksSet.insert(setIter);  // Добавляем элементы в выходной set
 		}
 	}
-	recursiveMultiTreadIndexator(DB, Depth - 1, inLinkSet);
+	recursiveMultiTreadIndexator(DB, Depth - 1, outLinksSet);
 }
 
 std::string DataBaseHostName;
