@@ -95,7 +95,49 @@ public:
 	}
 };
 
+// Создадим функцию для рекурсивного вызова
+void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string> inLinkSet) {
+	if (0 == Depth) return;
+	// Определим количество логических процессоров
+	int threads_num = std::thread::hardware_concurrency();
 
+	// Создадим очередь потоков
+	thread_pool task_queue(100);
+
+	std::mutex vectorMutex;
+
+	// Создадим пул потоков по количеству логических процессоров
+	thread_pool pool(threads_num);
+	std::vector<std::set<std::string>> outLinksVector;
+	std::thread T1 = std::thread([&pool, &DB, inLinkSet, Depth, &outLinksVector, &vectorMutex]() mutable {
+		for (const auto& newLink : inLinkSet) {
+			pool.submit([&DB, newLink, Depth, &outLinksVector, &pool, &vectorMutex] {
+				std::cout << "\nDepth (regressive) = " << Depth << std::endl;
+				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
+				// Получим ссылки, найденные на конкретной странице
+				std::set<std::string> result = indexator(DB, newLink);
+				// Добавим результы в вектор, в который все потоки складывают свои данные (что с разделением ресурсов)
+
+				// Защитим доступ к outLinksVector с помощью мьютекса
+				std::lock_guard<std::mutex> lock(vectorMutex);
+				outLinksVector.push_back(result);
+				});
+		}
+		});
+	T1.join(); // Завершения основного потока
+	std::thread T2 = std::thread([&pool] {pool.work(); });
+	// Подождём. когда выполнятся все потоки для очередного уровня Depth
+	T2.join();
+	
+	// Сделаем из вектора выходных значений один большой set
+	std::set<std::string> outLinksSet;
+	for (const auto& vectorIter : outLinksVector) {
+		for (const auto& setIter : vectorIter) {
+			outLinksSet.insert(setIter);  // Добавляем элементы в выходной set
+		}
+	}
+	recursiveMultiTreadIndexator(DB, Depth - 1, inLinkSet);
+}
 
 std::string DataBaseHostName;
 std::string DataBaseName;
@@ -167,38 +209,9 @@ int main()
 	}
 
 	// Запустим индексатор для первой страницы поиска
-	std::set<std::string> indexator_result = indexator(DB, SpiderStarPageURL);
+	std::set<std::string> inLinkSet = indexator(DB, SpiderStarPageURL);
 
-	// Определим количество логических процессоров
-	int threads_num = std::thread::hardware_concurrency();
+	recursiveMultiTreadIndexator(DB, SpiderDepth, inLinkSet);
 
-	// Создадим очередь потоков
-	thread_pool task_queue(100);
-
-	// Создадим пул потоков по количеству логических процессоров
-	thread_pool pool(threads_num);
-
-	//std::vector<std::set<std::string>> links_for_parcing;
-
-	// Основной поток выполняет задачи из indexator_result
-	std::thread T1 = std::thread([&pool, indexator_result, &DB]() mutable {
-		for (const auto& newLink : indexator_result) {
-			pool.submit([&DB, newLink, &pool] {
-				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
-				std::set<std::string> result = indexator(DB, newLink);
-				for (auto const& str : result) {
-					//std::cout << str << std::endl;
-					pool.submit([&DB, str] {
-						std::cout << "\n\tTask submitted for: " << str << std::endl;
-						std::set<std::string> result = indexator(DB, str);
-						// Здесь может быть ваша логика для работы с полученными данными
-						});
-				}
-				});
-		}
-		});
-	T1.join(); // Завершения основного потока
-	std::thread T2 = std::thread([&pool] {pool.work(); });
-	T2.join();
 	DB.CloseConnection();
 }
