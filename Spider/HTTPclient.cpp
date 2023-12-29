@@ -65,7 +65,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
-		std::cout << "Find charset for page " << host << std::endl;
+		//std::cout << "Find charset for page " << host << std::endl;
 		if (contentTypeHeader != res.end()) {
 		//	std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
 		}
