@@ -102,7 +102,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	int threads_num = std::thread::hardware_concurrency();
 
 	// Создадим очередь потоков
-	thread_pool task_queue(100);
+	thread_pool task_queue(200);
 
 	std::mutex vectorMutex;
 
