@@ -8,12 +8,13 @@
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
 
-std::set<std::string> Links; // Набор ссылок, найденных на странице
-std::map<std::string, int> Frequencies; // Частоты слов, найденных на странице
-int link_id; // Идентификатор страницы, которую индексируем
-std::map<std::string, int> WordIdPair; // Идентификаторы и соответсвующие слова в таблице
 
 std::set<std::string> indexator(database& DB, std::string inLink) {
+
+	std::set<std::string> Links; // Набор ссылок, найденных на странице
+	std::map<std::string, int> Frequencies; // Частоты слов, найденных на странице
+	int link_id; // Идентификатор страницы, которую индексируем
+	std::map<std::string, int> WordIdPair; // Идентификаторы и соответсвующие слова в таблице
 
 	try {
 		HTTPclient client; // Клиент для скачивания страницы
