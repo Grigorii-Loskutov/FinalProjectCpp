@@ -16,11 +16,11 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "../Spider/ParcerINI.h"
 #include "../Spider/database.h"
+#include "finder.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -203,8 +203,15 @@ handle_request(
 		// Выполнение поиска на основе полученных данных
 		// Здесь предполагается, что результаты поиска хранятся в переменной searchResults
 		std::string queryData = body; //"Полученные данные из запроса POST";
-		std::string searchResults = "Результаты поиска 1 \n Результаты поиска 2 ";
-
+	
+		// Почему-то в запросе лишний префикс - удалим
+		std::string queryPrefix = "query=";
+		if (body.substr(0, queryPrefix.size()) == queryPrefix) {
+			// Удаляем префикс "query="
+			queryData = body.substr(queryPrefix.size());
+		}
+		std::vector<std::string> searchResults = finder(queryData);
+		std::cout << "Query Data: " << queryData << std::endl;
 		// Формирование HTML-страницы с результатами поиска
 		std::ostringstream responseBody;
 		responseBody << "<!DOCTYPE html>\n"
@@ -232,7 +239,10 @@ handle_request(
 			<< "        <div class=\"search-results\">\n";
 
 		// Добавление результатов поиска в HTML
-		responseBody << "<p>" << searchResults << "</p>\n";
+		for(const auto& seachResultString : searchResults)
+		{
+			responseBody << "<p>" << seachResultString << "</p>\n";
+		}
 
 		responseBody << "        </div>\n"
 			<< "    </div>\n"
@@ -476,20 +486,6 @@ private:
 
 int main(int argc, char* argv[])
 {
-	// Check command line arguments.
-
-	//if (argc != 5)
-	//{
-	//    std::cerr <<
-	//        "Usage: http-server-async <address> <port> <doc_root> <threads>\n" <<
-	//        "Example:\n" <<
-	//        "    http-server-async 0.0.0.0 8080 . 1\n";
-	//    return EXIT_FAILURE;
-	//}
-	//auto const address = net::ip::make_address(argv[1]);
-	//auto const port = static_cast<unsigned short>(std::atoi(argv[2]));
-	//auto const doc_root = std::make_shared<std::string>(argv[3]);
-	//auto const threads = std::max<int>(1, std::atoi(argv[4]));
 
 	auto const address = net::ip::make_address("127.0.0.1");
 	auto const port = static_cast<unsigned short>(8080);
