@@ -34,9 +34,11 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	std::regex pattern_punctuation(R"([[:punct:]()])");
 	Line = std::regex_replace(Line, pattern_punctuation, " ");
 
-	// Удаление чисел (всех слов с числами)
-	//std::regex pattern_numbers(R"(\b\d+\b)");
+	// Удаления кавычек ("), одинарных (') и дефисов (-)
+	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
+	Line = std::regex_replace(Line, pattern_punctuation, "");
 
+	// Удаление чисел (всех слов с числами)
 	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
 	Line = std::regex_replace(Line, pattern_numbers, " ");
 
@@ -45,10 +47,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	Line = std::regex_replace(Line, SPACEpattern, "_");
 
 	// Переведем в нижний регистр
-	//for (char& c : Line) {
-	//	c = std::tolower(c);
-	//}
-
 	boost::locale::generator gen;
 	std::locale loc = gen(""); // Используем локаль по умолчанию
 	Line = boost::locale::to_lower(Line, loc);
