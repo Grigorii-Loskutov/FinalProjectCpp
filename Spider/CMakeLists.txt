@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Spyder)
+project(Spider)
 
 # Устанавливаем опцию компилятора для работы с UTF-8
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
@@ -29,18 +29,18 @@ set(PROJECT_SOURCES
 # Поиск и подключение Boost
 find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
 
-add_executable(Spyder ${PROJECT_SOURCES})
+add_executable(Spider ${PROJECT_SOURCES})
 
 # Включение директорий Boost
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Связывание библиотеки Boost с проектом
-target_link_libraries(Spyder ${Boost_LIBRARIES})
+target_link_libraries(Spider ${Boost_LIBRARIES})
 
 # Включение директорий Gumbo
 include_directories(${GUMBO_INCLUDE_DIR})
-target_link_libraries(Spyder "${GUMBO_LIB_DIR}/gumbo.lib")
+target_link_libraries(Spider "${GUMBO_LIB_DIR}/gumbo.lib")
 
 add_subdirectory(e:/Sources/libpqxx-7.7.5 libpqxx-build) # Путь к libpq++
-target_compile_features(Spyder PRIVATE cxx_std_17) # Включение C++17
-target_link_libraries(Spyder pqxx)
+target_compile_features(Spider PRIVATE cxx_std_17) # Включение C++17
+target_link_libraries(Spider pqxx)
