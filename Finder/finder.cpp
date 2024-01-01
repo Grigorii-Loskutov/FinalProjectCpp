@@ -55,18 +55,21 @@ std::vector<std::string> finder(std::string inSeachString) {
 	
 	try {
 		DB.SetConnection("localhost", "indexator", "postgres", "cfhvf810", 5432);
-		try {
-			seachResults = DB.seachRequest(inSeachString);
-		}
-		catch (const std::exception& ex) {
-			std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-			std::cout << "\n Try to find <" + inSeachString << "> in database: ";
-			std::string except = ex.what();
-			std::cout << "\n" << except;
+		for (const auto& word: setInWords)
+		{
+			try {
+				seachResults = DB.seachRequest(word);
+			}
+			catch (const std::exception& ex) {
+				std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
+				std::cout << "\n Try to find <" + word << "> in database: ";
+				std::string except = ex.what();
+				std::cout << "\n" << except;
+			}
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << "Try to create tables in databse\n";
+		std::cout << "Try to connect to database\n";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
