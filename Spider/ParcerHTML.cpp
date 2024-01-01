@@ -36,7 +36,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 
 	// Удаления кавычек ("), одинарных (') и дефисов (-)
 	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
-	Line = std::regex_replace(Line, pattern_punctuation, "");
+	Line = std::regex_replace(Line, pattern_remove_quotes_and_dashes, "");
 
 	// Удаление чисел (всех слов с числами)
 	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
