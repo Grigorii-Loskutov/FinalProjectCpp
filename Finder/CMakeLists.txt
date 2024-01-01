@@ -24,12 +24,20 @@ set(PROJECT_SOURCES
     main.cpp
 )
 
-find_package(Boost 1.81.0)
+find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+
 add_executable(Finder ${PROJECT_SOURCES} ${SPIDER_FILES})
+
+# Включение директорий Boost
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Связывание библиотеки Boost с проектом
+target_link_libraries(Finder ${Boost_LIBRARIES})
+
 
 add_subdirectory(e:/Sources/libpqxx-7.7.5 libpqxx-build) # Путь к libpq++
 target_compile_features(Finder PRIVATE cxx_std_17) # Включим C++17
