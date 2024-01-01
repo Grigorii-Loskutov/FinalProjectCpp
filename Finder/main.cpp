@@ -17,6 +17,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/locale.hpp>
+#include <boost/beast.hpp>
 
 #include "../Spider/ParcerINI.h"
 #include "../Spider/database.h"
@@ -203,13 +205,16 @@ handle_request(
 		// Выполнение поиска на основе полученных данных
 		// Здесь предполагается, что результаты поиска хранятся в переменной searchResults
 		std::string queryData = body; //"Полученные данные из запроса POST";
-	
+
+
 		// Почему-то в запросе лишний префикс - удалим
 		std::string queryPrefix = "query=";
 		if (body.substr(0, queryPrefix.size()) == queryPrefix) {
 			// Удаляем префикс "query="
 			queryData = body.substr(queryPrefix.size());
 		}
+		//Выполним перекодировку URL
+		queryData = url_decode(queryData);
 		std::vector<std::string> searchResults = finder(queryData);
 		std::cout << "Query Data: " << queryData << std::endl;
 		// Формирование HTML-страницы с результатами поиска
@@ -484,9 +489,37 @@ private:
 
 //------------------------------------------------------------------------------
 
+// Функция для декодирования URL
+std::string url_decode(const std::string& in) {
+	std::string out;
+	boost::beast::string_view sv(in);
+	out.reserve(sv.size());
+
+	for (std::size_t i = 0; i < sv.size(); ++i) {
+		if (sv[i] == '%' && i + 2 < sv.size() &&
+			std::isxdigit(sv[i + 1]) && std::isxdigit(sv[i + 2])) {
+			int hi = std::isdigit(sv[i + 1]) ? sv[i + 1] - '0' : std::tolower(sv[i + 1]) - 'a' + 10;
+			int lo = std::isdigit(sv[i + 2]) ? sv[i + 2] - '0' : std::tolower(sv[i + 2]) - 'a' + 10;
+			out.push_back((hi << 4) | lo);
+			i += 2;
+		}
+		else if (sv[i] == '+') {
+			out.push_back(' ');
+		}
+		else {
+			out.push_back(sv[i]);
+		}
+	}
+
+	return out;
+}
+
+
 int main(int argc, char* argv[])
 {
 
+	SetConsoleCP(65001);
+	SetConsoleOutputCP(65001); //UTF-8
 	auto const address = net::ip::make_address("127.0.0.1");
 	auto const port = static_cast<unsigned short>(8080);
 	auto const doc_root = std::make_shared<std::string>(".");
