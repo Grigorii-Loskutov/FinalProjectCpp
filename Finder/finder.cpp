@@ -7,6 +7,25 @@
 #include <boost/locale/conversion.hpp>
 #include "../Spider/database.h"
 
+std::vector<std::string> findByFrequency(std::map<std::string, int>& linkWeight) {
+	std::vector<std::string> seachResults;
+
+	// Создаем вектор пар (link, frequency) из map
+	std::vector<std::pair<std::string, int>> vec(linkWeight.begin(), linkWeight.end());
+
+	// Сортируем по убыванию frequency
+	std::sort(vec.begin(), vec.end(), [](const auto& lhs, const auto& rhs) {
+		return lhs.second > rhs.second;
+		});
+
+	// Заполняем seachResults отсортированными значениями link
+	for (const auto& pair : vec) {
+		seachResults.push_back(pair.first);
+	}
+
+	return seachResults;
+}
+
 std::vector<std::string> finder(std::string inSeachString) {
 	std::vector<std::string> seachResults;
 
@@ -66,7 +85,10 @@ std::vector<std::string> finder(std::string inSeachString) {
 	// Вектор для хранения слов запроса, порядок слов соответсвует resultsPerWord
 	// Это проще, чем городить ещё один set
 	std::vector<std::string> wordsInOrder; 
-															
+
+	// Набор для хранения удельных весов каждой ссылки
+	std::map<std::string, int> linkWeight;
+
 	try {
 		DB.SetConnection("localhost", "indexator", "postgres", "cfhvf810", 5432);
 		for (const auto& word : setInWords)
@@ -95,9 +117,27 @@ std::vector<std::string> finder(std::string inSeachString) {
 		for (const auto& pair : vectors) {
 			std::cout << pair.first << ": ";
 			std::cout << pair.second << std::endl;
-			seachResults.push_back(pair.first);
+			//seachResults.push_back(pair.first);
+
+			// Заполним набор ссылок с весами
+			linkWeight[pair.first] += pair.second;
 		}
 		++wordIter;
 	}
+	std::cout << std::endl;
+	std::cout << "\n Отсоритрованный ссылки с весами\n";
+	/*for (const auto& pair : linkWeight) {
+		std::cout << pair.first << ": ";
+		std::cout << pair.second << std::endl;
+	}*/
+
+	// Вызываем функцию для сортировки linkWeight по убыванию frequency
+	std::vector<std::string> sortedLinks = findByFrequency(linkWeight);
+
+	// Отображаем отсортированные ссылки
+	for (const auto& link : sortedLinks) {
+		std::cout << link << ": " << linkWeight[link] << std::endl;
+	}
+	seachResults = std::move(sortedLinks);
 	return seachResults;
 }
