@@ -7,6 +7,7 @@
 #include <boost/locale/conversion.hpp>
 #include "../Spider/database.h"
 
+// Функция для сортировки ссылок по весам
 std::vector<std::string> findByFrequency(std::map<std::string, int>& linkWeight) {
 	std::vector<std::string> seachResults;
 
