@@ -10,35 +10,36 @@
 std::vector<std::string> finder(std::string inSeachString) {
 	std::vector<std::string> seachResults;
 
-	// Создадим подключение к базе данных
+	// РЎРѕР·РґР°РґРёРј РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р±Р°Р·Рµ РґР°РЅРЅС‹С…
 	database DB;
 
-	// Удаление знаков препинания и скобок
+	// РЈРґР°Р»РµРЅРёРµ Р·РЅР°РєРѕРІ РїСЂРµРїРёРЅР°РЅРёВ¤ Рё СЃРєРѕР±РѕРє
 	std::regex pattern_punctuation(R"([[:punct:]()])");
 	inSeachString = std::regex_replace(inSeachString, pattern_punctuation, " ");
 
-	// Удаления кавычек ("), одинарных (') и дефисов (-)
+	// РЈРґР°Р»РµРЅРёВ¤ РєР°РІС‹С‡РµРє ("), РѕРґРёРЅР°СЂРЅС‹С… (') Рё РґРµС„РёСЃРѕРІ (-)
 	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
 	inSeachString = std::regex_replace(inSeachString, pattern_remove_quotes_and_dashes, "");
 
-	// Удаление чисел (всех слов с числами)
+	// РЈРґР°Р»РµРЅРёРµ С‡РёСЃРµР» (РІСЃРµС… СЃР»РѕРІ СЃ С‡РёСЃР»Р°РјРё)
 	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
 	inSeachString = std::regex_replace(inSeachString, pattern_numbers, " ");
 
-	// Удаление лишних пробелов
+	// РЈРґР°Р»РµРЅРёРµ Р»РёС€РЅРёС… РїСЂРѕР±РµР»РѕРІ
 	std::regex SPACEpattern(R"(\s+)");
 	inSeachString = std::regex_replace(inSeachString, SPACEpattern, "_");
 
-	// Переведем в нижний регистр
+	// РџРµСЂРµРІРµРґРµРј РІ РЅРёР¶РЅРёР№ СЂРµРіРёСЃС‚СЂ
 	boost::locale::generator gen;
-	std::locale loc = gen(""); // Используем локаль по умолчанию
+	std::locale loc = gen(""); // СЃРїРѕР»СЊР·СѓРµРј Р»РѕРєР°Р»СЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 	inSeachString = boost::locale::to_lower(inSeachString, loc);
 
-	// Заполним set для хранения слов для поиска
+	// Р—Р°РїРѕР»РЅРёРј set РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЃР»РѕРІ РїРѕРёСЃРєР°
 	std::set<std::string> setInWords;
 	unsigned int cut_end_pos{ 0 };
 	unsigned int cut_start_pos{ 0 };
-	for (unsigned int iter = 0; iter < inSeachString.length(); ++iter) {
+	unsigned int stringLength = inSeachString.length();
+	for (unsigned int iter = 0; iter < stringLength; ++iter) {
 		if (inSeachString[iter] == '_') {
 			cut_end_pos = iter;
 			std::string word = inSeachString.substr(cut_start_pos, cut_end_pos - cut_start_pos);
@@ -47,18 +48,32 @@ std::vector<std::string> finder(std::string inSeachString) {
 			}
 			cut_start_pos = iter + 1;
 		}
+		else if (iter == (stringLength - 1)) {
+			cut_end_pos = stringLength;
+			std::string word = inSeachString.substr(cut_start_pos, cut_end_pos - cut_start_pos);
+			if (word.length() >= 4) {
+				setInWords.insert(word);
+			}
+		}
 	}
-	std::cout << "\nСлова для поиска: \n";
+	std::cout << "\nРЎР»РѕРІР° РґР»СЏ РїРѕРёСЃРєР°: \n";
 	for (const auto& word : setInWords) {
 		std::cout << word << std::endl;
 	}
-	
+	// РҐСЂР°РЅРµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ Р·Р°РїСЂРѕСЃР° РґР»СЏ РєР°Р¶РґРѕРіРѕ СЃР»РѕРІР° (СЃСЃС‹Р»РєР°, С‡Р°СЃС‚РѕС‚Р°)
+	std::vector <std::map<std::string, int>> resultsPerWord;
+
+	// Р’РµРєС‚РѕСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЃР»РѕРІ Р·Р°РїСЂРѕСЃР°, РїРѕСЂСЏРґРѕРє СЃР»РѕРІ СЃРѕРѕС‚РІРµС‚СЃРІСѓРµС‚ resultsPerWord
+	// Р­С‚Рѕ РїСЂРѕС‰Рµ, С‡РµРј РіРѕСЂРѕРґРёС‚СЊ РµС‰С‘ РѕРґРёРЅ set
+	std::vector<std::string> wordsInOrder; 
+															
 	try {
 		DB.SetConnection("localhost", "indexator", "postgres", "cfhvf810", 5432);
-		for (const auto& word: setInWords)
+		for (const auto& word : setInWords)
 		{
 			try {
-				seachResults = DB.seachRequest(word);
+				resultsPerWord.push_back(DB.seachRequest(word));
+				wordsInOrder.push_back(word);
 			}
 			catch (const std::exception& ex) {
 				std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
@@ -72,6 +87,17 @@ std::vector<std::string> finder(std::string inSeachString) {
 		std::cout << "Try to connect to database\n";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
+	}
+	std::cout << "\nР РµР·СѓР»СЊС‚Р°С‚С‹ РїРѕРёСЃРєР° РґР»СЏ СЃР»РѕРІ: \n";
+	unsigned int wordIter = 0;
+	for (const auto& vectors : resultsPerWord) {
+		std::cout << wordsInOrder[wordIter] << ": \n";
+		for (const auto& pair : vectors) {
+			std::cout << pair.first << ": ";
+			std::cout << pair.second << std::endl;
+			seachResults.push_back(pair.first);
+		}
+		++wordIter;
 	}
 	return seachResults;
 }

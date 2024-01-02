@@ -243,10 +243,12 @@ handle_request(
 			<< "        <p>Результаты вашего поиска: " << queryData << "</p>\n"
 			<< "        <div class=\"search-results\">\n";
 
-		// Добавление результатов поиска в HTML
-		for(const auto& seachResultString : searchResults)
+		// Добавление результатов поиска в HTML как ссылки
+		for (const auto& searchResultString : searchResults)
 		{
-			responseBody << "<p>" << seachResultString << "</p>\n";
+			responseBody << "<p><a href=\"http://" << searchResultString << "\">" << searchResultString << "</a></p>\n";
+
+			//responseBody << "<p><a href=\"" << searchResultString << "\">" << searchResultString << "</a></p>\n";
 		}
 
 		responseBody << "        </div>\n"
@@ -510,14 +512,14 @@ std::string url_decode(const std::string& in) {
 			out.push_back(sv[i]);
 		}
 	}
-
+	//out = boost::locale::conv::between(out, "UTF-8", "ISO-8859-1");
 	return out;
 }
 
 
 int main(int argc, char* argv[])
 {
-
+	//setlocale(LC_ALL, "Russian");
 	SetConsoleCP(65001);
 	SetConsoleOutputCP(65001); //UTF-8
 	auto const address = net::ip::make_address("127.0.0.1");
