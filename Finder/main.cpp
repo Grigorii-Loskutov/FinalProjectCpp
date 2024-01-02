@@ -260,6 +260,10 @@ handle_request(
 			// Выведем результаты в виде кликабельных ссылок
 			responseBody << "<p><a href=\"http://" << searchResultString << "\">" << searchResultString << "</a></p>\n";
 		}
+		if (searchResults.empty())
+		{
+			responseBody << "<p>" << "Ничего не найдено по запросу: " << queryData << "</p>\n";
+		}
 
 		responseBody << "        </div>\n"
 			<< "    </div>\n"
