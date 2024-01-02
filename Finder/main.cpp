@@ -247,13 +247,18 @@ handle_request(
 			<< "        <p>Результаты вашего поиска: " << queryData << "</p>\n"
 			<< "        <div class=\"search-results\">\n";
 
-		// Добавление результатов поиска в HTML как ссылки
+		// Добавление формы для нового поиска
+		responseBody << "        <form action=\"/search\" method=\"POST\">\n"
+			<< "            <label for=\"query\">Введите запрос:</label><br>\n"
+			<< "            <input type=\"text\" id=\"query\" name=\"query\" placeholder=\"Введите запрос\"><br>\n"
+			<< "            <input type=\"submit\" value=\"Найти\">\n"
+			<< "        </form>\n";
+
+		// Добавление результатов поиска в HTML как ссылок
 		for (const auto& searchResultString : searchResults)
 		{
 			// Выведем результаты в виде кликабельных ссылок
 			responseBody << "<p><a href=\"http://" << searchResultString << "\">" << searchResultString << "</a></p>\n";
-
-			//responseBody << "<p><a href=\"" << searchResultString << "\">" << searchResultString << "</a></p>\n";
 		}
 
 		responseBody << "        </div>\n"
