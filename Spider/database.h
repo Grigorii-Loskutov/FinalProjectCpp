@@ -57,5 +57,5 @@ public:
 
 	void frequency_add(const int linkID, const int wordID, const int frequency);
 
-	std::vector<std::string> seachRequest(std::string word_to_search);
+	std::map<std::string, int> seachRequest(std::string word_to_search);
 };

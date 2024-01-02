@@ -97,17 +97,19 @@ void database::frequency_add(const int linkID, const int wordID, const int frequ
 	tx.commit();
 }
 
-std::vector<std::string> database::seachRequest(std::string word_to_search) {
-	std::vector<std::string> links;
+std::map<std::string, int> database::seachRequest(std::string word_to_search) {
+	std::map<std::string, int> linksAndFrequency;
 	pqxx::work tx{ *c };
-	std::string search_request = "SELECT links.link FROM links "
+	std::string search_request = "SELECT links.link, frequencies.frequency FROM links "
 		"JOIN frequencies ON links.id = frequencies.links_id "
 		"JOIN words ON words.id = frequencies.words_id "
 		"WHERE words.word = " + tx.quote(word_to_search) +
 		" ORDER BY frequencies.frequency DESC LIMIT 10;";
 	pqxx::result result_set = tx.exec(search_request);
 	for (const pqxx::row& row : result_set) {
-		links.push_back(row[0].as<std::string>());
+		std::string link = row[0].as<std::string>();
+		int frequency = row[1].as<int>();
+		linksAndFrequency[link] = frequency;
 	}
-	return links;
+	return linksAndFrequency;
 }
