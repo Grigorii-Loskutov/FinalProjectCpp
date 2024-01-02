@@ -104,7 +104,7 @@ std::map<std::string, int> database::seachRequest(std::string word_to_search) {
 		"JOIN frequencies ON links.id = frequencies.links_id "
 		"JOIN words ON words.id = frequencies.words_id "
 		"WHERE words.word = " + tx.quote(word_to_search) +
-		" ORDER BY frequencies.frequency DESC LIMIT 10;";
+		" ORDER BY frequencies.frequency DESC LIMIT 100;";
 	pqxx::result result_set = tx.exec(search_request);
 	for (const pqxx::row& row : result_set) {
 		std::string link = row[0].as<std::string>();
