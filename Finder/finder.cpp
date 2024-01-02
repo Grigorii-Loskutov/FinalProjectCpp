@@ -27,11 +27,8 @@ std::vector<std::string> findByFrequency(std::map<std::string, int>& linkWeight)
 	return seachResults;
 }
 
-std::vector<std::string> finder(std::string inSeachString) {
+std::vector<std::string> finder(std::string inSeachString, database& DB) {
 	std::vector<std::string> seachResults;
-
-	// Создадим подключение к базе данных
-	database DB;
 
 	// Удаление знаков препинани¤ и скобок
 	std::regex pattern_punctuation(R"([[:punct:]()])");
