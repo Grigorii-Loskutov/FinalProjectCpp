@@ -29,6 +29,10 @@ namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
+// Глобальная переменная - база данных
+
+database DB;
+
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view
 mime_type(beast::string_view path)
@@ -215,7 +219,7 @@ handle_request(
 		}
 		//Выполним перекодировку URL
 		queryData = url_decode(queryData);
-		std::vector<std::string> searchResults = finder(queryData);
+		std::vector<std::string> searchResults = finder(queryData, DB);
 		std::cout << "Query Data: " << queryData << std::endl;
 		// Формирование HTML-страницы с результатами поиска
 		std::ostringstream responseBody;
@@ -517,36 +521,91 @@ std::string url_decode(const std::string& in) {
 	return out;
 }
 
+std::string DataBaseHostName;
+std::string DataBaseName;
+std::string DataBaseUserName;
+std::string DataBasePassword;
+int DataBasePort;
+
+
+std::string FinderAddress;
+int FinderPort;
 
 int main(int argc, char* argv[])
 {
 	//setlocale(LC_ALL, "Russian");
 	SetConsoleCP(65001);
 	SetConsoleOutputCP(65001); //UTF-8
-	auto const address = net::ip::make_address("127.0.0.1");
-	auto const port = static_cast<unsigned short>(8080);
-	auto const doc_root = std::make_shared<std::string>(".");
-	auto const threads = std::max<int>(1, 1);
 
-	// The io_context is required for all I/O
-	net::io_context ioc{ threads };
+	// Прочитаем конфигурацию в файле configuration.ini
+	try {
+		char buffer[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, buffer);
+		std::string filePath = std::string(buffer) + "\\configuration.ini"; // определим путь к исполняемому файлу
+		std::cout << filePath;
+		ParcerINI parser = ParcerINI::ParcerINI(filePath);
 
-	// Create and launch a listening port
-	std::make_shared<listener>(
-		ioc,
-		tcp::endpoint{ address, port },
-		doc_root)->run();
+		DataBaseHostName = parser.get_value<std::string>("DataBase.HostName");
+		DataBaseName = parser.get_value<std::string>("DataBase.DatabaseName");
+		DataBaseUserName = parser.get_value<std::string>("DataBase.UserName");
+		DataBasePassword = parser.get_value<std::string>("DataBase.Password");
+		DataBasePort = parser.get_value<int>("DataBase.Port");
 
-	// Run the I/O service on the requested number of threads
-	std::vector<std::thread> v;
-	v.reserve(threads - 1);
-	for (auto i = threads - 1; i > 0; --i)
-		v.emplace_back(
-			[&ioc]
-			{
-				ioc.run();
-			});
-	ioc.run();
 
-	return EXIT_SUCCESS;
+		FinderAddress = parser.get_value<std::string>("Finder.Address");
+		FinderPort = parser.get_value<int>("Finder.Port");
+
+
+		std::cout << "DataBaseHostName: " << DataBaseHostName << std::endl;
+		std::cout << "DataBaseName: " << DataBaseName << std::endl;
+		std::cout << "DataBaseUserName: " << DataBaseUserName << std::endl;
+		std::cout << "DataBasePassword: " << DataBasePassword << std::endl;
+		std::cout << "DataBasePort: " << DataBasePort << std::endl;
+		std::cout << "FinderAddress: " << FinderAddress << std::endl;
+		std::cout << "FinderPort: " << FinderPort << std::endl;
+
+
+		auto const address = net::ip::make_address(FinderAddress);
+		auto const port = static_cast<unsigned short>(FinderPort);
+		auto const doc_root = std::make_shared<std::string>(".");
+		auto const threads = std::max<int>(1, 1);
+
+
+		try {
+			DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
+		}
+		catch (const std::exception& ex) {
+			std::cout << "Try to create tables in databse\n";
+			std::string except = ex.what();
+			std::cout << "\n" << except;
+		}
+
+		// The io_context is required for all I/O
+		net::io_context ioc{ threads };
+
+		// Create and launch a listening port
+		std::make_shared<listener>(
+			ioc,
+			tcp::endpoint{ address, port },
+			doc_root)->run();
+
+		// Run the I/O service on the requested number of threads
+		std::vector<std::thread> v;
+		v.reserve(threads - 1);
+		for (auto i = threads - 1; i > 0; --i)
+			v.emplace_back(
+				[&ioc]
+				{
+					ioc.run();
+				});
+		ioc.run();
+
+		return EXIT_SUCCESS;
+	}
+	catch (const std::exception& ex) {
+
+		std::string except = ex.what();
+		std::cout << "\n" << except;
+	}
+
 }
