@@ -52,10 +52,10 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	Line = boost::locale::to_lower(Line, loc);
 
 	// Заполним набор для хранения частот
-
+	unsigned int lineLength = Line.length();
 	unsigned int cut_end_pos{ 0 };
 	unsigned int cut_start_pos{ 0 };
-	for (unsigned int iter = 0; iter < Line.length(); ++iter) {
+	for (unsigned int iter = 0; iter < lineLength; ++iter) {
 		if (Line[iter] == '_') {
 			cut_end_pos = iter;
 			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
@@ -64,6 +64,14 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 			}
 			cut_start_pos = iter + 1;
 		}
+		else if (iter == (lineLength - 1)) {
+			cut_end_pos = lineLength;
+			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
+			if (word.length() >= 4) {
+				Frequencies[word]++;
+			}
+		}
+
 	}
 }
 
