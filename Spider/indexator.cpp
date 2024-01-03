@@ -15,11 +15,25 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	std::map<std::string, int> Frequencies; // Частоты слов, найденных на странице
 	int link_id; // Идентификатор страницы, которую индексируем
 	std::map<std::string, int> WordIdPair; // Идентификаторы и соответсвующие слова в таблице
+	std::string host;
+	std::string target;
+
+	// Разделим адрес на host и target
+	size_t slashPos = inLink.find("/");
+	if (slashPos != std::string::npos) {
+		host = inLink.substr(0, slashPos);
+		target = inLink.substr(slashPos);
+	}
+	else {
+		host = inLink;
+		target = "/";
+	}
 
 	try {
 		HTTPclient client; // Клиент для скачивания страницы
 		std::string response = ""; // Строка с ответом
-		if (client.performGetRequest(inLink, "80", "/", 5) == 0)
+
+		if (client.performGetRequest(host, "80", target, 5) == 0)
 		{
 			response = client.getData();
 			//std::cout << response;
