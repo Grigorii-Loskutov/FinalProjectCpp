@@ -123,11 +123,7 @@ std::vector<std::string> finder(std::string inSeachString, database& DB) {
 		++wordIter;
 	}
 	std::cout << std::endl;
-	std::cout << "\n Отсоритрованный ссылки с весами\n";
-	/*for (const auto& pair : linkWeight) {
-		std::cout << pair.first << ": ";
-		std::cout << pair.second << std::endl;
-	}*/
+	std::cout << "\nСсылки с весами (в порядке убывания веса)\n";
 
 	// Вызываем функцию для сортировки linkWeight по убыванию frequency
 	std::vector<std::string> sortedLinks = findByFrequency(linkWeight);
