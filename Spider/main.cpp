@@ -101,8 +101,8 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
 
-	// Создадим очередь потоков
-	thread_pool task_queue(200);
+	// Создадим очередь потоков по количеству входных линков
+	thread_pool task_queue((inLinkSet.size() > 200) ? inLinkSet.size() : 200);
 
 	std::mutex vectorMutex;
 
@@ -199,7 +199,7 @@ int main()
 
 	try {
 		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
-		DB.table_delete();
+		//DB.table_delete();
 		DB.table_create();
 	}
 	catch (const std::exception& ex) {
