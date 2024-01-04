@@ -43,18 +43,19 @@ void database::table_delete() {
 
 void database::CloseConnection() {
 	pqxx::work tx{ *c };
+	tx.commit();
 }
 
 void database::word_add(const std::string newWord) {
 	pqxx::work tx{ *c };
-	std::string str_word_add = "INSERT INTO Words (word) VALUES ('" + tx.esc(newWord) + "') ON CONFLICT (word) DO NOTHING;";
+	std::string str_word_add = "INSERT INTO Words (word) VALUES ('" + tx.esc(newWord) + "');";// ON CONFLICT (word) DO NOTHING;";
 	tx.exec(str_word_add);
 	tx.commit();
 }
 
 void database::link_add(const std::string newLink) {
 	pqxx::work tx{ *c };
-	std::string str_link_add = "INSERT INTO Links (link) VALUES ('" + tx.esc(newLink) + "') ON CONFLICT (link) DO NOTHING;";
+	std::string str_link_add = "INSERT INTO Links (link) VALUES ('" + tx.esc(newLink) + "');";// ON CONFLICT (link) DO NOTHING;";
 	tx.exec(str_link_add);
 	tx.commit();
 }
