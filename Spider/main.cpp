@@ -101,9 +101,6 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
 
-	// Создадим очередь потоков по количеству входных линков
-	thread_pool task_queue((inLinkSet.size() > 200) ? inLinkSet.size() : 200);
-
 	std::mutex vectorMutex;
 
 	// Создадим пул потоков по количеству логических процессоров
