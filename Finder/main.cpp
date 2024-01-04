@@ -255,10 +255,13 @@ handle_request(
 			<< "        </form>\n";
 
 		// Добавление результатов поиска в HTML как ссылок
+		unsigned int linkIter = 0;
 		for (const auto& searchResultString : searchResults)
 		{
 			// Выведем результаты в виде кликабельных ссылок
 			responseBody << "<p><a href=\"http://" << searchResultString << "\">" << searchResultString << "</a></p>\n";
+			++linkIter;
+			if (linkIter > 10) break;
 		}
 		if (searchResults.empty())
 		{
