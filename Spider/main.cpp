@@ -199,7 +199,7 @@ int main()
 
 	try {
 		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
-		//DB.table_delete();
+		DB.table_delete();
 		DB.table_create();
 	}
 	catch (const std::exception& ex) {
