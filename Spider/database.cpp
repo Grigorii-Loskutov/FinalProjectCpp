@@ -4,6 +4,7 @@
 #include <exception>
 #include <tuple>
 #include <windows.h>
+#include <mutex>
 
 void database::SetConnection(std::string DataBaseHostName,
 	std::string DataBaseName,
@@ -42,11 +43,13 @@ void database::table_delete() {
 }
 
 void database::CloseConnection() {
+	std::lock_guard<std::mutex> lock(mtx);
 	pqxx::work tx{ *c };
 	tx.commit();
 }
 
 void database::word_add(const std::string newWord) {
+	std::lock_guard<std::mutex> lock(mtx);
 	pqxx::work tx{ *c };
 	std::string str_word_add = "INSERT INTO Words (word) VALUES ('" + tx.esc(newWord) + "');";// ON CONFLICT (word) DO NOTHING;";
 	tx.exec(str_word_add);
@@ -54,6 +57,7 @@ void database::word_add(const std::string newWord) {
 }
 
 void database::link_add(const std::string newLink) {
+	std::lock_guard<std::mutex> lock(mtx);
 	pqxx::work tx{ *c };
 	std::string str_link_add = "INSERT INTO Links (link) VALUES ('" + tx.esc(newLink) + "');";// ON CONFLICT (link) DO NOTHING;";
 	tx.exec(str_link_add);
@@ -61,6 +65,7 @@ void database::link_add(const std::string newLink) {
 }
 
 std::map <std::string, int> database::getWordId() {
+	std::lock_guard<std::mutex> lock(mtx);
 	std::map<std::string, int> wordIdMap;
 	pqxx::work tx{ *c };
 	std::string select_word_id_pair = ("SELECT id, word FROM Words");
@@ -74,6 +79,7 @@ std::map <std::string, int> database::getWordId() {
 }
 
 int database::getLinkId(const std::string& linkValue) {
+	std::lock_guard<std::mutex> lock(mtx);
 	pqxx::work tx{ *c };
 	std::string select_link_id = "SELECT id FROM Links WHERE link = '" + tx.esc(linkValue) + "'";
 	pqxx::result result = tx.exec(select_link_id);
@@ -89,6 +95,7 @@ int database::getLinkId(const std::string& linkValue) {
 }
 
 void database::frequency_add(const int linkID, const int wordID, const int frequency) {
+	std::lock_guard<std::mutex> lock(mtx);
 	pqxx::work tx{ *c };
 	std::string insert_frequency = "INSERT INTO frequencies (links_id, words_id, frequency) VALUES ("
 		+ tx.quote(linkID) + ", "
@@ -99,6 +106,7 @@ void database::frequency_add(const int linkID, const int wordID, const int frequ
 }
 
 std::map<std::string, int> database::seachRequest(std::string word_to_search) {
+	std::lock_guard<std::mutex> lock(mtx);
 	std::map<std::string, int> linksAndFrequency;
 	pqxx::work tx{ *c };
 	std::string search_request = "SELECT links.link, frequencies.frequency FROM links "

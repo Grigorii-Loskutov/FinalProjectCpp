@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <mutex>
 #include <pqxx/pqxx>
 #include <windows.h>
 #include <set>
@@ -8,7 +8,7 @@
 class database {
 private:
 	std::unique_ptr <pqxx::connection> c;
-
+	std::mutex mtx; // добавляем мьютекс
 	std::string str_creation = {
 			"CREATE TABLE IF NOT EXISTS links ("
 			"id SERIAL PRIMARY KEY, "
