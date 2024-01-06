@@ -110,7 +110,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 
 	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
-	threads_num = inLinkSet.size() > 100 ? 100 : inLinkSet.size();
+	//threads_num = inLinkSet.size() > 100 ? 100 : inLinkSet.size();
 	std::cout << "\nNumber of treads: " << threads_num << std::endl;
 
 	// Мьютекс для блокировки записи результатов в выходной вектор разными потоками
