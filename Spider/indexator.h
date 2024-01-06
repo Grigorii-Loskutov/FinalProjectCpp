@@ -1,10 +1,9 @@
 #pragma once
 
-#include <string.h>
+#include <string>
+#include <map>
+#include <tuple>
 #include <set>
-#include "database.h"
 
-
-
-std::set<std::string> indexator(database& DB, std::string inLink);
+std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexator(std::string inLink);
 

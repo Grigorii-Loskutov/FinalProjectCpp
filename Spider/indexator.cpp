@@ -4,12 +4,11 @@
 #include <set>
 #include <map>
 #include <exception>
-#include "database.h"
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
 
 
-std::set<std::string> indexator(database& DB, std::string inLink) {
+std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexator(std::string inLink) {
 
 	std::set<std::string> Links; // Набор ссылок, найденных на странице
 	std::map<std::string, int> Frequencies; // Частоты слов, найденных на странице
@@ -19,6 +18,9 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	std::set<std::string> wordsInPage;	    // Слова, наденные на странице (для проверки наличия их в базе данных)
 	std::string host;
 	std::string target;
+
+	// Функция возвращает кортеж: (адрес индексируемой страницы, set новых ссылок, набор: (слово, частота))
+	std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult;
 
 	// Разделим адрес на host и target
 	size_t slashPos = inLink.find("/");
@@ -44,114 +46,12 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				ParcerHTML parcerHTML(response, inLink);
 				Links = parcerHTML.getLinks();
 				Frequencies = parcerHTML.getFrequencies();
-				
-				for (const auto& line : Links) {
-					//std::cout << line << std::endl;
-				}
-				try
-				{
-					// Добавим в базу адресс страницы, которую проиндексировали (если такого адреса там ещё нет)
-					DB.link_add(inLink); // Просто бросим исключения, если адресс уже проиндексирован
-
-					// Вносим в базу данных частоты слов для определенной страницы
-					// Получим id страницы, которую индексируем
-					try {
-						link_id = DB.getLinkId(inLink);
-
-						// Получим таблицу слов с id целиком
-						try {
-							WordIdPair = DB.getWordId();
-							bool isNewWordAdd = false;
-							// Добавим новые слова, если такие есть
-							for (const auto& pair : Frequencies) {
-								std::string wordInPage = pair.first;
-								if (WordIdPair[wordInPage] == 0) {
-									// Добавим в базу данных новое слово
-									isNewWordAdd = true;
-									try {
-										DB.word_add(wordInPage);
-									}
-									catch (const std::exception& ex) {
-										std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-										std::cout << "\n Fail to add new word in database: ";
-										std::string except = ex.what();
-										std::cout << "\n" << except;
-										DB.CloseConnection();
-										return Links;
-									}
-								}
-							}
-
-							// Если были добавления слов, то загрузим заново таблицу из  базы данных
-							if (isNewWordAdd) {
-								try {
-									WordIdPair = DB.getWordId();
-								}
-								catch (const std::exception& ex) {
-									std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-									std::cout << "\n Fail to get words ID from database: ";
-									std::string except = ex.what();
-									std::cout << "\n" << except;
-									DB.CloseConnection();
-									return Links;
-								}
-							}
-
-							//Заполним таблицу частот, если успешно получили ID страницы
-							for (const auto& pair : Frequencies) {
-								//std::cout << counter << ". " << pair.first << ": " << pair.second << std::endl;
-								//++counter;
-								int wordFrequency = pair.second;
-								int wordId = WordIdPair[pair.first];
-								try {
-									DB.frequency_add(link_id, wordId, wordFrequency);
-								}
-								catch (const std::exception& ex) {
-									std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-									std::cout << "\nTry to add frequency for word " << pair.first << ": ";
-									std::string except = ex.what();
-									std::cout << "\n" << except;
-									DB.CloseConnection();
-									return Links;
-								}
-							}
-						}
-						catch (const std::exception& ex) {
-							std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-							std::cout << "\n Fail to get words ID from database: ";
-							std::string except = ex.what();
-							std::cout << "\n" << except;
-							DB.CloseConnection();
-							return Links;
-						}
-						
-					}
-					catch (const std::exception& ex) {
-						std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-						std::cout << "\n Fail to get address ID from database " + inLink << ": ";
-						std::string except = ex.what();
-						std::cout << "\n" << except;
-						DB.CloseConnection();
-						return Links;
-					}
-
-
-				}
-				catch (const std::exception& ex) {
-					std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-					std::cout << "\n Fail to add new address " << inLink << ": ";
-					std::string except = ex.what();
-					std::cout << "\n" << except;
-					DB.CloseConnection();
-					return Links;
-				}
-
+				indexatorResult = std::make_tuple(inLink, Links, Frequencies);
 			}
 			catch (const std::exception& ex) {
 				std::cout << "\n Fail to parce page " + inLink << ": ";
 				std::string except = ex.what();
 				std::cout << "\n" << except;
-				return Links;
 			}
 		}
 	}
@@ -160,9 +60,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		std::cout << "\n Fail to load page: ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
-		return Links;
-
 	}
-	//std::cout << "\nИндексатор отработал и не упал" << std::endl;
-	return Links;
+	return indexatorResult;
 };

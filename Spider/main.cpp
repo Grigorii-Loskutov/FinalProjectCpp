@@ -98,26 +98,53 @@ public:
 // Создадим функцию для рекурсивного вызова
 void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string> inLinkSet) {
 	if (0 == Depth) return;
+
+	std::cout << "\n\t Current recursion level: " << Depth << std::endl;
+	std::cout << "\n\t Number of new links of current level: " << inLinkSet.size() << std::endl;
+
+
+	// Добавим все новые линки в базу данных (обработка исключений внутри класса database)
+	//for (const auto& setIter : inLinkSet) {
+	//	DB.link_add(setIter);
+	//}
+
 	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
+	threads_num = inLinkSet.size() > 100 ? 100 : inLinkSet.size();
+	std::cout << "\nNumber of treads: " << threads_num << std::endl;
 
+	// Мьютекс для блокировки записи результатов в выходной вектор разными потоками
 	std::mutex vectorMutex;
-
+	
 	// Создадим пул потоков по количеству логических процессоров
 	thread_pool pool(threads_num);
-	std::vector<std::set<std::string>> outLinksVector;
-	std::thread T1 = std::thread([&pool, &DB, inLinkSet, Depth, &outLinksVector, &vectorMutex]() mutable {
-		for (const auto& newLink : inLinkSet) {
-			pool.submit([&DB, newLink, Depth, &outLinksVector, &pool, &vectorMutex] {
-				std::cout << "\nDepth (regressive) = " << Depth << std::endl;
-				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
-				// Получим ссылки, найденные на конкретной странице
-				std::set<std::string> result = indexator(DB, newLink);
-				// Добавим результы в вектор, в который все потоки складывают свои данные (что с разделением ресурсов)
 
+	// Вектор для сбора результатов отдельных потоков
+	std::vector<std::tuple <std::string, std::set<std::string>, std::map<std::string, int>>> resultsVector;
+
+	// Счётчик оставшихся для индексации ссылок
+	int decrementLinks = inLinkSet.size();
+
+	std::thread T1 = std::thread([&pool, &DB, inLinkSet, Depth, &resultsVector, &vectorMutex, &decrementLinks]() mutable {
+		for (const auto& newLink : inLinkSet) {
+			pool.submit([&DB, newLink, Depth, &resultsVector, &pool, &vectorMutex, &decrementLinks, inLinkSet] {
+				std::cout << "\nRecursion = " << Depth << " -> ";				std::cout << "\nRecursion = " << Depth << " -> ";
+				std::cout << "Left links:  " << decrementLinks << " -> ";
+				std::cout << "Task submitted for: " << newLink << std::endl;
+				// Получим ссылки, найденные на конкретной странице
+				std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult = indexator(newLink);
+
+				// Добавим результы в вектор, в который все потоки складывают свои данные (с разделением ресурсов)
 				// Защитим доступ к outLinksVector с помощью мьютекса
 				std::lock_guard<std::mutex> lock(vectorMutex);
-				outLinksVector.push_back(result);
+
+				if (inLinkSet.count(std::get<0>(indexatorResult)) != 0) {
+					resultsVector.push_back(indexatorResult);
+				}
+				else {
+					std::cout << "\n Unworked link\n ";
+				}
+				--decrementLinks;
 				});
 		}
 		});
@@ -125,14 +152,159 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	std::thread T2 = std::thread([&pool] {pool.work(); });
 	// Подождём. когда выполнятся все потоки для очередного уровня Depth
 	T2.join();
-	
-	// Сделаем из вектора выходных значений один большой set
+	Sleep(1000);
+
+	// --------   Начнем разбор результатов -------------
+	int number;
+	// Все уникальные найденные ссылки на всех страницах
 	std::set<std::string> outLinksSet;
-	for (const auto& vectorIter : outLinksVector) {
-		for (const auto& setIter : vectorIter) {
-			outLinksSet.insert(setIter);  // Добавляем элементы в выходной set
+
+	// Все уникальные найденные слова на всех страницах
+	std::set<std::string> findedWords;
+
+	for (const auto& tupleIter : resultsVector) {
+
+		// Текущая ссылка для добавления
+		std::string currentLink = std::get<0>(tupleIter);
+		int currentLinkID = -1;
+
+		// Если кортеж не содержит ссылки (страница не была распарсена), то перейдём на следующую итерацию
+		if (currentLink.length() == 0)
+		{
+			//std::cout << "\n Empty input link: " << currentLink << std::endl;
+			continue;
+		}
+
+		// Сделаем  один большой set из всех найденных ссылок на всех страницах 
+		for (const auto& setIter : std::get<1>(tupleIter)) {
+			if (setIter.length() == 0)
+			{
+				std::cout << "\n Empty link\n";
+			}
+			else
+			{
+				outLinksSet.insert(setIter);  // Добавляем элементы в выходной outLinksSet
+			}
+		}
+
+		// Сделаем  один большой set из всех найденных слов на всех страницах данной итерации
+		for (const auto& mapIter : std::get<2>(tupleIter)) {
+			if (mapIter.first.length() == 0)
+			{
+				std::cout << "\n Empty word\n";
+			}
+			{
+				findedWords.insert(mapIter.first);  // Добавляем ключи (слова) в выходной findedWords
+			}
 		}
 	}
+	std::cout << "\n Level: " << Depth << ", finded new links: " << outLinksSet.size();
+	std::cout << "\n Level: " << Depth << ", finded words: " << findedWords.size();
+
+	// Получим таблицу слов с ID целиком
+	std::map<std::string, int> WordIdPair = DB.getWordId();
+	std::cout << "\n Level: " << Depth << ", now in DataBase words: " << WordIdPair.size();
+
+	bool isNewWordAdd = false;
+
+	// Отдельный set для всех новых слов
+	//std::set<std::string> newWords;
+
+	// Найдем новые слова, если такие есть
+	std::cout << "\nFind new words...\n";
+	int newWordCounter = 0;
+	for (const auto& wordIter : findedWords) {
+		if (WordIdPair[wordIter] == 0) {
+			DB.word_add(wordIter);
+			isNewWordAdd = true;
+			newWordCounter++;
+		}
+	}
+	std::cout << "\n Level: " << Depth << ", finded new words: " << newWordCounter;
+
+	// Добавим в базу новые слова, если такие нашлись
+	std::cout << "\nAdd new words in DataBase...\n";
+	if (isNewWordAdd) {
+
+		//for (const auto& setIter : newWords) {
+		//	DB.word_add(setIter);
+		//}
+
+		// Обновим таблицу слов (с учетом добавленных)
+		std::cout << "\n Level: " << Depth << ", now in DataBase words: " << WordIdPair.size();
+
+		// Получим таблицу слов с ID целиком ещё раз
+		WordIdPair = DB.getWordId();
+	}
+
+
+	int frecuencyIncrement = 0; // Счётчик добавлений частот
+	int linkIncrement = 0; //Счётчик добавлений ссылок
+	int failWordsIncrement = 0; // счётчик недобавленных слов?
+	// Начнём добавлять в базу новые линки и частоты
+	std::cout << "\nAdd new frequencies in DataBase...\n";
+	for (const auto& tupleIter : resultsVector) {
+
+		// Текущая ссылка для добавления
+		std::string currentLink = std::get<0>(tupleIter);
+		int currentLinkID = -1;
+
+		// Если кортеж не содержит ссылки (страница не была распарсена), то перейдём на следующую итерацию
+		if (currentLink.length() == 0)
+		{
+			std::cout << "\n Empty input link: " << currentLink << std::endl;
+			continue;
+		}
+		// Если ссылка ненулевая, добавим ее в базу данных
+		else {
+			DB.link_add(currentLink);
+			// Получим ID текущего линка
+			currentLinkID = DB.getLinkId(currentLink);
+		}
+		
+		if (currentLinkID == -1) {
+			std::cout << "\n There is no ID for link:" << currentLink << std::endl;
+			continue;
+		}
+
+		// Добавляем частоты слов, найденных на currentLinkID
+		try
+		{
+			for (const auto& mapIter : std::get<2>(tupleIter)) {
+				std::string currentWord = mapIter.first; // Текущее слово
+				int currentWordID = WordIdPair[currentWord];
+				int currentFrecuency = mapIter.second;  //Текущая частота
+
+				if (currentWordID == 0) {
+					//std::cout << "\nThere is no word:" << currentWord << " in DataBase" << ": ID = " << currentWordID;
+					++failWordsIncrement;
+					continue;
+				}
+				if (currentFrecuency == 0) {
+					std::cout << "\nThere is no frecuency value for word:" << currentWord;
+					continue;
+				}
+				if (currentLinkID == 0) {
+					std::cout << "\nThere is no ID for link:" << currentWord;
+					continue;
+				}
+				// Делаем запись в базу данных
+				DB.frequency_add(currentLinkID, currentWordID, currentFrecuency);
+				++frecuencyIncrement;
+			}
+			++linkIncrement;
+		}
+		catch (const std::exception& ex) {
+			std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
+			std::cout << "\n Fail to add frecuency for word: ";
+			std::string except = ex.what();
+			std::cout << "\n" << except;
+		}
+	}
+	std::cout << "\n Level: " << Depth << ", added  frecuencies: " << frecuencyIncrement << " for links: " << linkIncrement;
+	std::cout << "\n Fail words:" << failWordsIncrement << std::endl;
+	Sleep(5000);
+	// Запустим рекурсивно индексацию для всех найденных ссылок
 	recursiveMultiTreadIndexator(DB, Depth - 1, outLinksSet);
 }
 
@@ -144,6 +316,7 @@ int DataBasePort;
 
 std::string SpiderStarPageURL;
 int SpiderDepth;
+bool newDB;
 
 std::string FinderAddress;
 int FinderPort;
@@ -170,6 +343,7 @@ int main()
 
 		SpiderStarPageURL = parser.get_value<std::string>("Spider.StartPageURL");
 		SpiderDepth = parser.get_value<int>("Spider.Depth");
+		newDB = parser.get_value<int>("Spider.NewDB");
 
 		FinderAddress = parser.get_value<std::string>("Finder.Address");
 		FinderPort = parser.get_value<int>("Finder.Port");
@@ -182,6 +356,7 @@ int main()
 		std::cout << "DataBasePort: " << DataBasePort << std::endl;
 		std::cout << "SpiderStarPageURL: " << SpiderStarPageURL << std::endl;
 		std::cout << "SpiderDepth: " << SpiderDepth << std::endl;
+		std::cout << "Delete old data base: " << (newDB ? "true" : "false") << std::endl;
 		std::cout << "FinderAddress: " << FinderAddress << std::endl;
 		std::cout << "FinderPort: " << FinderPort << std::endl;
 	}
@@ -196,7 +371,7 @@ int main()
 
 	try {
 		DB.SetConnection(DataBaseHostName, DataBaseName, DataBaseUserName, DataBasePassword, DataBasePort);
-		DB.table_delete();
+		if (newDB) { DB.table_delete(); }
 		DB.table_create();
 	}
 	catch (const std::exception& ex) {
@@ -204,10 +379,10 @@ int main()
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
-
 	// Запустим индексатор для первой страницы поиска
-	std::set<std::string> inLinkSet = indexator(DB, SpiderStarPageURL);
-
+	std::set<std::string> inLinkSet; //= indexator(DB, SpiderStarPageURL);
+	inLinkSet.insert(SpiderStarPageURL);
+	Sleep(1000);
 	recursiveMultiTreadIndexator(DB, SpiderDepth, inLinkSet);
 
 	DB.CloseConnection();
