@@ -125,10 +125,10 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	// Счётчик оставшихся для индексации ссылок
 	int decrementLinks = inLinkSet.size();
 
-	std::thread T1 = std::thread([&pool, &DB, inLinkSet, Depth, &resultsVector, &vectorMutex, &decrementLinks]() mutable {
+	std::thread T1 = std::thread([&pool, &DB, &inLinkSet, Depth, &resultsVector, &vectorMutex, &decrementLinks]() mutable {
 		for (const auto& newLink : inLinkSet) {
-			pool.submit([&DB, newLink, Depth, &resultsVector, &pool, &vectorMutex, &decrementLinks, inLinkSet] {
-				std::cout << "\nRecursion = " << Depth << " -> ";				std::cout << "\nRecursion = " << Depth << " -> ";
+			pool.submit([&DB, newLink, Depth, &resultsVector, &pool, &vectorMutex, &decrementLinks, &inLinkSet] {
+				std::cout << "\nRecursion = " << Depth << " -> ";
 				std::cout << "Left links:  " << decrementLinks << " -> ";
 				std::cout << "Task submitted for: " << newLink << std::endl;
 				// Получим ссылки, найденные на конкретной странице
