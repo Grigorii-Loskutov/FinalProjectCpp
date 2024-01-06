@@ -100,24 +100,38 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	if (0 == Depth) return;
 	// Определим количество логических процессоров
 	int threads_num = std::thread::hardware_concurrency();
+	//threads_num = inLinkSet.size() > 100 ? 100 : inLinkSet.size();
+	std::cout << "\nNumber of treads: " << threads_num << std::endl;
 
+	std::cout << "\n\t Current recursion level: " << Depth << std::endl;
+	std::cout << "\n\t Number of new links of current level: " << inLinkSet.size() << std::endl;
+
+	// Мьютекс для блокировки записи результатов в выходной вектор разными потоками
 	std::mutex vectorMutex;
 
-	// Создадим пул потоков по количеству логических процессоров
+	// Создадим пул потоков
 	thread_pool pool(threads_num);
+
+	// Вектор для сбора результатов отдельных потоков
 	std::vector<std::set<std::string>> outLinksVector;
-	std::thread T1 = std::thread([&pool, &DB, inLinkSet, Depth, &outLinksVector, &vectorMutex]() mutable {
+
+	// Счётчик оставшихся для индексации ссылок
+	int decrementLinks = inLinkSet.size();
+	std::thread T1 = std::thread([&pool, &DB, &inLinkSet, Depth, &outLinksVector, &vectorMutex, &decrementLinks]() mutable {
 		for (const auto& newLink : inLinkSet) {
-			pool.submit([&DB, newLink, Depth, &outLinksVector, &pool, &vectorMutex] {
-				std::cout << "\nDepth (regressive) = " << Depth << std::endl;
-				std::cout << "\n\tTask submitted for: " << newLink << std::endl;
+			pool.submit([&DB, newLink, Depth, &outLinksVector, &pool, &vectorMutex, &decrementLinks] {
+				std::cout << "\nRecursion = " << Depth << " -> ";
+				std::cout << "Left links:  " << decrementLinks << " -> ";
+				std::cout << "Task submitted for: " << newLink << std::endl;
+
 				// Получим ссылки, найденные на конкретной странице
 				std::set<std::string> result = indexator(DB, newLink);
-				// Добавим результы в вектор, в который все потоки складывают свои данные (что с разделением ресурсов)
 
+				// Добавим результы в вектор, в который все потоки складывают свои данные (что с разделением ресурсов)
 				// Защитим доступ к outLinksVector с помощью мьютекса
 				std::lock_guard<std::mutex> lock(vectorMutex);
 				outLinksVector.push_back(result);
+				--decrementLinks;
 				});
 		}
 		});
@@ -125,7 +139,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	std::thread T2 = std::thread([&pool] {pool.work(); });
 	// Подождём. когда выполнятся все потоки для очередного уровня Depth
 	T2.join();
-	
+
 	// Сделаем из вектора выходных значений один большой set
 	std::set<std::string> outLinksSet;
 	for (const auto& vectorIter : outLinksVector) {
