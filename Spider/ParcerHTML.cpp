@@ -59,7 +59,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		if (Line[iter] == '_') {
 			cut_end_pos = iter;
 			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
-			if (word.length() >= 4) {
+			if ((word.length() >= 4) && (word.length() <= 40)) {
 				Frequencies[word]++;
 			}
 			cut_start_pos = iter + 1;
@@ -67,7 +67,7 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 		else if (iter == (lineLength - 1)) {
 			cut_end_pos = lineLength;
 			std::string word = Line.substr(cut_start_pos, cut_end_pos - cut_start_pos);
-			if (word.length() >= 4) {
+			if ((word.length() >= 4) && (word.length() <= 40)) {
 				Frequencies[word]++;
 			}
 		}
