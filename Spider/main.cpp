@@ -284,7 +284,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 					std::cout << "\nThere is no frecuency value for word:" << currentWord;
 					continue;
 				}
-				if (currentLinkID == 0) {
+				if (currentLinkID <= 0) {
 					std::cout << "\nThere is no ID for link:" << currentWord;
 					continue;
 				}
