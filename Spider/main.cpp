@@ -304,6 +304,13 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	std::cout << "\n Level: " << Depth << ", added  frecuencies: " << frecuencyIncrement << " for links: " << linkIncrement;
 	std::cout << "\n Fail words:" << failWordsIncrement << std::endl;
 	Sleep(5000);
+
+	// Очистим все контейнеры перед рекурсивным вызововом
+	resultsVector.clear();
+	//outLinksSet.clear();
+	findedWords.clear();
+	pool.~thread_pool();
+	vectorMutex.~mutex();
 	// Запустим рекурсивно индексацию для всех найденных ссылок
 	recursiveMultiTreadIndexator(DB, Depth - 1, outLinksSet);
 }
