@@ -114,7 +114,13 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 				link = std::regex_replace(link, pattern_http, "");
 				std::regex pattern_slash(R"(/$)");
 				link = std::regex_replace(link, pattern_slash, "");
-				Links.insert(link);
+				std::regex fileExtensionRegex(R"(\.(pdf|djvu|jpeg|jpg|doc|tiff|png|xls|css)$)");
+
+				// Проверяем расширение файла с помощью регулярного выражения
+				if (!std::regex_search(link, fileExtensionRegex)) {
+					// Если расширение соответствует указанным, установим добавим link
+					Links.insert(link);
+				}
 			}
 		}
 	}
