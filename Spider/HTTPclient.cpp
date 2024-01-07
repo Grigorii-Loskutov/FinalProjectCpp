@@ -73,7 +73,7 @@ int HTTPclient::performGetRequest(const std::string& host, const std::string& po
 		//	std::cout << "Content-Type header not found" << std::endl;
 		}
 		std::string TypeHeaderStr = contentTypeHeader->value();
-		std::regex charsetPattern(R"(charset=([^\s;]+))");
+		std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
 		std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
 		std::sregex_iterator end;
 		std::smatch match;
