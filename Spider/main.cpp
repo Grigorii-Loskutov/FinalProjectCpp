@@ -142,7 +142,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 					resultsVector.push_back(indexatorResult);
 				}
 				else {
-					std::cout << "\n Unworked link\n ";
+					std::cout << "->This link is not work\n ";
 				}
 				--decrementLinks;
 				});
@@ -198,12 +198,12 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 			}
 		}
 	}
-	std::cout << "\n Level: " << Depth << ", finded new links: " << outLinksSet.size();
-	std::cout << "\n Level: " << Depth << ", finded words: " << findedWords.size();
+	std::cout << "\n Level: " << Depth << "-> Found new links: " << outLinksSet.size();
+	std::cout << "\n Level: " << Depth << "-> Found words: " << findedWords.size();
 
 	// Получим таблицу слов с ID целиком
 	std::map<std::string, int> WordIdPair = DB.getWordId();
-	std::cout << "\n Level: " << Depth << ", now in DataBase words: " << WordIdPair.size();
+	std::cout << "\n Level: " << Depth << "-> Now words in DataBase: " << WordIdPair.size();
 
 	bool isNewWordAdd = false;
 
@@ -211,7 +211,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	//std::set<std::string> newWords;
 
 	// Найдем новые слова, если такие есть
-	std::cout << "\nFind new words...\n";
+	std::cout << "\nFinding new words...";
 	int newWordCounter = 0;
 	for (const auto& wordIter : findedWords) {
 		if (WordIdPair[wordIter] == 0) {
@@ -220,10 +220,10 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 			newWordCounter++;
 		}
 	}
-	std::cout << "\n Level: " << Depth << ", finded new words: " << newWordCounter;
+	std::cout << "\n Level: " << Depth << ", found new words: " << newWordCounter;
 
 	// Добавим в базу новые слова, если такие нашлись
-	std::cout << "\nAdd new words in DataBase...\n";
+	std::cout << "\nAdding new words in DataBase...";
 	if (isNewWordAdd) {
 
 		//for (const auto& setIter : newWords) {
@@ -231,7 +231,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 		//}
 
 		// Обновим таблицу слов (с учетом добавленных)
-		std::cout << "\n Level: " << Depth << ", now in DataBase words: " << WordIdPair.size();
+		std::cout << "\n Level: " << Depth << "-> Now words in DataBase: " << WordIdPair.size();
 
 		// Получим таблицу слов с ID целиком ещё раз
 		WordIdPair = DB.getWordId();
