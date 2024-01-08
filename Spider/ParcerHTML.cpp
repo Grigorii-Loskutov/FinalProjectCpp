@@ -37,7 +37,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z])");
 	// Не могу обяснить, почему не работает регулярное выражение
 	//std::regex pattern_keep_alphanumeric(R"([^a-zA-Zа-яА-Я0-9])");
-	//std::regex pattern_keep_alphanumeric(R"([^\w\d])"); //Только для латиницы
 
 	Line = std::regex_replace(Line, pattern_keep_alphanumeric, " ");
 
