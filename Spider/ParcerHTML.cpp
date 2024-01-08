@@ -28,17 +28,23 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 
 
 	// Переведем в нижний регистр
-	boost::locale::generator gen;
-	std::locale loc = gen(""); // Используем локаль по умолчанию
-	Line = boost::locale::to_lower(Line, loc);
 
 	// Удалим все символы, которые не буквы и не цифры
-	std::regex pattern_keep_alphanumeric(R"([^0-9 a b c d e f g h i j k l m n o p q r s t u v w x y z а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я])"/*, std::regex::icase*/);
+	std::regex pattern_keep_alphanumeric(R"([^0-9
+ a b c d e f g h i j k l m n o p q r s t u v w x y z
+ а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я
+ А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я
+ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z])");
 	// Не могу обяснить, почему не работает регулярное выражение
 	//std::regex pattern_keep_alphanumeric(R"([^a-zA-Zа-яА-Я0-9])");
 	//std::regex pattern_keep_alphanumeric(R"([^\w\d])"); //Только для латиницы
 
 	Line = std::regex_replace(Line, pattern_keep_alphanumeric, " ");
+
+	// Переведем в нижний регистр
+	boost::locale::generator gen;
+	std::locale loc = gen(""); // Используем локаль по умолчанию
+	Line = boost::locale::to_lower(Line, loc);
 
 	// Удаление лишних пробелов
 	std::regex SPACEpattern(R"(\s+)");
