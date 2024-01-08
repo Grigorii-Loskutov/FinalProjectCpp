@@ -8,7 +8,7 @@ class HTTPclient {
 public:
 
 	// Function declaration for performing HTTP GET request
-	int performGetRequest(const std::string& host, const std::string& port,
+	void performGetRequest(const std::string& host, const std::string& port,
 		const std::string& target, int version_in);
 	std::string getData();
 private:

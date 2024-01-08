@@ -26,30 +26,29 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	std::regex tagRegex(R"((<[^>]*>|<!--[^>]*-->))");
 	Line = std::regex_replace(HTML_strings, tagRegex, " ");
 
-	// Удаление строки вида &nbsp;
-	std::regex pattern_nbsp(R"((&nbsp;\s*)+)");
-	Line = std::regex_replace(Line, pattern_nbsp, " ");
 
-	// Удаление знаков препинания и скобок
-	std::regex pattern_punctuation(R"([[:punct:]()])");
-	Line = std::regex_replace(Line, pattern_punctuation, " ");
+	// Переведем в нижний регистр
 
-	// Удаления кавычек ("), одинарных (') и дефисов (-)
-	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
-	Line = std::regex_replace(Line, pattern_remove_quotes_and_dashes, "");
+	// Удалим все символы, которые не буквы и не цифры
+	std::regex pattern_keep_alphanumeric(R"([^0-9
+ a b c d e f g h i j k l m n o p q r s t u v w x y z
+ а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я
+ А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я
+ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z])");
+	// Не могу обяснить, почему не работает регулярное выражение
+	//std::regex pattern_keep_alphanumeric(R"([^a-zA-Zа-яА-Я0-9])");
+	//std::regex pattern_keep_alphanumeric(R"([^\w\d])"); //Только для латиницы
 
-	// Удаление чисел (всех слов с числами)
-	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
-	Line = std::regex_replace(Line, pattern_numbers, " ");
-
-	// Удаление лишних пробелов
-	std::regex SPACEpattern(R"(\s+)");
-	Line = std::regex_replace(Line, SPACEpattern, "_");
+	Line = std::regex_replace(Line, pattern_keep_alphanumeric, " ");
 
 	// Переведем в нижний регистр
 	boost::locale::generator gen;
 	std::locale loc = gen(""); // Используем локаль по умолчанию
 	Line = boost::locale::to_lower(Line, loc);
+
+	// Удаление лишних пробелов
+	std::regex SPACEpattern(R"(\s+)");
+	Line = std::regex_replace(Line, SPACEpattern, "_");
 
 	// Заполним набор для хранения частот
 	unsigned int lineLength = Line.length();
@@ -71,7 +70,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 				Frequencies[word]++;
 			}
 		}
-
 	}
 }
 
@@ -114,8 +112,9 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 				link = std::regex_replace(link, pattern_http, "");
 				std::regex pattern_slash(R"(/$)");
 				link = std::regex_replace(link, pattern_slash, "");
-				std::regex fileExtensionRegex(R"(\.(pdf|djvu|jpeg|jpg|doc|tiff|png|xls|css|zip|tar|7zip)$)");
 
+				// Регулярное выражение для проверки расширений файлов
+				std::regex fileExtensionRegex(R"(\.(pdf|djvu|jpeg|jpg|doc|tiff|png|xls|css|zip|tar|7zip|bmp)$)");
 				// Проверяем расширение файла с помощью регулярного выражения
 				if (!std::regex_search(link, fileExtensionRegex)) {
 					// Если расширение соответствует указанным, установим добавим link
