@@ -93,7 +93,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 			beast::error_code ec;
 			stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 			// Проверено с помощью логиривания, что такая страница плохая, из неё данные не нужно брать
-			throw std::domain_error("\nUndefined charset for page: " + host + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
+			throw std::domain_error("\nUndefined charset for page: " + host + target + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
 		}
 	}
 

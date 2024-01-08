@@ -49,14 +49,13 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 			//std::cout << parcerHTML.getLine();
 		}
 		catch (const std::exception& ex) {
-			std::cout << "\n Fail to parce page " + inLink << ": ";
+			std::cout << "\n\t" << "Fail to parce page " + inLink << ": ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to load page " + inLink << ": ";
+		std::cout << "\n\t" << "Fail to load page " + inLink << ": ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}

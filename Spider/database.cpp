@@ -59,8 +59,8 @@ void database::word_add(const std::string newWord) {
 		tx.commit();
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to add new word: " << newWord;
+		std::cout  << "\n\t"<< __FILE__ << ", line: " << __LINE__ ;
+		std::cout << "\nFail to add new word: " << newWord;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -76,8 +76,8 @@ void database::link_add(const std::string newLink) {
 		tx.commit();
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to add new link: " << newLink;
+		std::cout << "\n\t" << __FILE__ << ", line: " << __LINE__;
+		std::cout << "\nFail to add new link: " << newLink;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -99,8 +99,8 @@ std::map <std::string, int> database::getWordId() {
 		return wordIdMap;
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to get all words ID: ";
+		std::cout << "\n\t" << __FILE__ << ", line: " << __LINE__;
+		std::cout << "\nFail to get all words ID: ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -124,8 +124,8 @@ int database::getLinkId(const std::string& linkValue) {
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to get link ID: " << linkValue;
+		std::cout << "\n\t" << __FILE__ << ", line: " << __LINE__;
+		std::cout << "\nFail to get link ID: " << linkValue;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 		return -1;
@@ -145,8 +145,8 @@ void database::frequency_add(const int linkID, const int wordID, const int frequ
 		tx.commit();
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to frequency_add: " << linkID << ": " << wordID << ": " << frequency;
+		std::cout << "\n\t" << __FILE__ << ", line: " << __LINE__;
+		std::cout << "\nFail to frequency_add: " << linkID << ": " << wordID << ": " << frequency;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
@@ -171,8 +171,8 @@ std::map<std::string, int> database::seachRequest(std::string word_to_search) {
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to word seach " << word_to_search;
+		std::cout << "\n\t" << __FILE__ << ", line: " << __LINE__;
+		std::cout << "\nFail to word seach " << word_to_search;
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
