@@ -37,27 +37,26 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 		HTTPclient client; // Клиент для скачивания страницы
 		std::string response = ""; // Строка с ответом
 
-		if (client.performGetRequest(host, "80", target, 5) == 0) // Запрос выполнен без ошибки
+		client.performGetRequest(host, "80", target, 5);
+		response = client.getData();
+		try
 		{
-			response = client.getData();
-			try
-			{
-				// Пробуем парсить страницу
-				ParcerHTML parcerHTML(response, inLink);
-				Links = parcerHTML.getLinks();
-				Frequencies = parcerHTML.getFrequencies();
-				indexatorResult = std::make_tuple(inLink, Links, Frequencies);
-			}
-			catch (const std::exception& ex) {
-				std::cout << "\n Fail to parce page " + inLink << ": ";
-				std::string except = ex.what();
-				std::cout << "\n" << except;
-			}
+			// Пробуем парсить страницу
+			ParcerHTML parcerHTML(response, inLink);
+			Links = parcerHTML.getLinks();
+			Frequencies = parcerHTML.getFrequencies();
+			indexatorResult = std::make_tuple(inLink, Links, Frequencies);
+			//std::cout << parcerHTML.getLine();
+		}
+		catch (const std::exception& ex) {
+			std::cout << "\n Fail to parce page " + inLink << ": ";
+			std::string except = ex.what();
+			std::cout << "\n" << except;
 		}
 	}
 	catch (const std::exception& ex) {
 		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
-		std::cout << "\n Fail to load page: ";
+		std::cout << "\n Fail to load page " + inLink << ": ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}
