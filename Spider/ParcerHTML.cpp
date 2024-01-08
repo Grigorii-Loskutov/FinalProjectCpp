@@ -27,29 +27,40 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 	Line = std::regex_replace(HTML_strings, tagRegex, " ");
 
 	// Удаление строки вида &nbsp;
-	std::regex pattern_nbsp(R"((&nbsp;\s*)+)");
-	Line = std::regex_replace(Line, pattern_nbsp, " ");
+	//std::regex pattern_nbsp(R"((&nbsp;\s*)+)");
+	//Line = std::regex_replace(Line, pattern_nbsp, " ");
 
-	// Удаление знаков препинания и скобок
-	std::regex pattern_punctuation(R"([[:punct:]()])");
-	Line = std::regex_replace(Line, pattern_punctuation, " ");
+	//// Удаление знаков препинания и скобок
+	//std::regex pattern_punctuation(R"([[:punct:]()])");
+	//Line = std::regex_replace(Line, pattern_punctuation, " ");
 
-	// Удаления кавычек ("), одинарных (') и дефисов (-)
-	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
-	Line = std::regex_replace(Line, pattern_remove_quotes_and_dashes, "");
+	//// Удаления кавычек ("), одинарных (') и дефисов (-)
+	//std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
+	//Line = std::regex_replace(Line, pattern_remove_quotes_and_dashes, "");
 
-	// Удаление чисел (всех слов с числами)
-	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
-	Line = std::regex_replace(Line, pattern_numbers, " ");
+	//// Удаление чисел (всех слов с числами)
+	//std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
+	//Line = std::regex_replace(Line, pattern_numbers, " ");
+
+	// Переведем в нижний регистр
+	boost::locale::generator gen;
+	std::locale loc = gen(""); // Используем локаль по умолчанию
+	Line = boost::locale::to_lower(Line, loc);
+
+	std::regex pattern_keep_alphanumeric(R"([^0-9 a b c d e f g h i j k l m n o p q r s t u v w x y z а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я])"/*, std::regex::icase*/);
+	// Не могу обяснить, почему не работает регулярное выражение
+	//std::regex pattern_keep_alphanumeric(R"([^a-zA-Zа-яА-Я0-9])");
+	//std::regex pattern_keep_alphanumeric(R"([^\w\d])");
+	Line = std::regex_replace(Line, pattern_keep_alphanumeric, " ");
 
 	// Удаление лишних пробелов
 	std::regex SPACEpattern(R"(\s+)");
 	Line = std::regex_replace(Line, SPACEpattern, "_");
 
 	// Переведем в нижний регистр
-	boost::locale::generator gen;
-	std::locale loc = gen(""); // Используем локаль по умолчанию
-	Line = boost::locale::to_lower(Line, loc);
+	//boost::locale::generator gen;
+	//std::locale loc = gen(""); // Используем локаль по умолчанию
+	//Line = boost::locale::to_lower(Line, loc);
 
 	// Заполним набор для хранения частот
 	unsigned int lineLength = Line.length();
