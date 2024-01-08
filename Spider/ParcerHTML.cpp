@@ -21,13 +21,13 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
 
 	gumbo_destroy_output(&kGumboDefaultOptions, output);
 
-	//std::regex tagRegex("<[^>]*>");
 	// Удаление html информации в <>
 	std::regex tagRegex(R"((<[^>]*>|<!--[^>]*-->))");
 	Line = std::regex_replace(HTML_strings, tagRegex, " ");
 
-
-	// Переведем в нижний регистр
+	// Удаление строки вида &nbsp;
+	std::regex pattern_nbsp(R"((&nbsp;\s*)+)");
+	Line = std::regex_replace(Line, pattern_nbsp, " ");
 
 	// Удалим все символы, которые не буквы и не цифры
 	std::regex pattern_keep_alphanumeric(R"([^0-9
@@ -37,7 +37,6 @@ ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z])");
 	// Не могу обяснить, почему не работает регулярное выражение
 	//std::regex pattern_keep_alphanumeric(R"([^a-zA-Zа-яА-Я0-9])");
-	//std::regex pattern_keep_alphanumeric(R"([^\w\d])"); //Только для латиницы
 
 	Line = std::regex_replace(Line, pattern_keep_alphanumeric, " ");
 
