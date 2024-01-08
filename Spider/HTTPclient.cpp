@@ -30,21 +30,12 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 	tcp::resolver resolver(ioc);
 	beast::tcp_stream stream(ioc);
 
-	//try {
-	//	// Look up the domain name
+	// Look up the domain name
 	auto const results = resolver.resolve(host, port);
-	/*for (const auto& result : results) {
-		std::cout << "Host: " << result.endpoint().address().to_string() << std::endl;
-		std::cout << "Port: " << result.endpoint().port() << std::endl;
-	}*/
 
 	// Make the connection on the IP address we get from a lookup
 	stream.connect(results);
-	//}
-	//catch (const std::exception& e) {
-	//	std::cerr << "Error during DNS resolution for " << host << e.what() << std::endl;
-	//	// Обработка ошибки или выполнение других действий при возникновении исключения
-	//}
+	
 	// Set up an HTTP GET request message
 	http::request<http::string_body> req{ http::verb::get, target, version };
 	req.set(http::field::host, host);
@@ -64,80 +55,52 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 
 	// Получение значения заголовка Content-Type для определения типа кодировки
 	auto contentTypeHeader = res.find("Content-Type");
-	//std::cout << "Find charset for page " << host << std::endl;
-	if (contentTypeHeader != res.end()) {
-		//	std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
-	}
-	else {
-		//	std::cout << "Content-Type header not found" << std::endl;
-	}
+	
 	std::string TypeHeaderStr = contentTypeHeader->value();
 	std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
 	std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
 	std::sregex_iterator end;
 	std::smatch match;
+
+	// Определим charset из Content-Type
 	std::string charset;
 	if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
 		if (match.size() > 1) {
 			charset = match[1];
-			//std::cout << "Найден charset: " << charset << std::endl;
 		}
 	}
 
 	std::stringstream response_stream;
 	response_stream << res;
 
+	// Составим одну большую строку для всей страницы
 	std::string line;
 	while (std::getline(response_stream, line)) {
 		lines.append(" ");
 		lines.append(line);
 	}
 
-	// Выполним перекодировку
-	if (charset.length() != 0)
+	// Определим charset из meta tag в случае отсутствия его в Content-Type
+	if (charset.length() == 0)
 	{
-		const std::string UTF8{ "UTF-8" };
-		//std::cout << "Charset = " << charset << std::endl;
-		std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
-		////std::cout << utf8_line;
-		lines = std::move(utf8_line);
-	}
-	else {
 		std::regex charsetPattern_(R"(charset\s*['"]?([^'">\s]+)['"]?\s*[>,;\s*])", std::regex::icase);
 		std::smatch match_;
 		if (std::regex_search(lines, match_, charsetPattern_)) {
 			charset = match_[1];
-			//std::cout << "\n\tCharset для страницы : " << host << "\t" << charset << std::endl;
-			const std::string UTF8{ "UTF-8" };
-			std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
-			lines = std::move(utf8_line);
-			/*std::ofstream logfile("log.txt", std::ios_base::app);
-			if (logfile.is_open()) {
-				logfile << "Charset для страницы: " << host << "\t" << charset << std::endl;
-				logfile.close();
-			}
-			else {
-				std::cerr << "Unable to open log file" << std::endl;
-			}*/
 		}
 		else {
-			//std::cout << "Charset meta tag not found." << std::endl;
-			//std::cout << "\n\tCharset НЕ НАЙДЕН в : " << contentTypeHeader->value() << std::endl;
-			//std::ofstream logfile("log.txt", std::ios_base::app);
-			//if (logfile.is_open()) {
-			//	logfile << "Charset НЕ НАЙДЕН для страницы: " << host << "contentTypeHeader" << contentTypeHeader->value() << std::endl;
-			//	logfile << lines << std::endl;;
-			//	logfile.close();
-			//}
-			//else {
-			//	std::cerr << "Unable to open log file" << std::endl;
-			//}
 			lines.clear();
 			beast::error_code ec;
 			stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+			// Проверено с помощью логиривания, что такая страница плохая, из неё данные не нужно брать
 			throw std::domain_error("\nUndefined charset for page: " + host + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
 		}
 	}
+
+	// Выполним перекодировку
+	const std::string UTF8{ "UTF-8" };
+	std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+	lines = std::move(utf8_line);
 
 	// Gracefully close the socket
 	beast::error_code ec;
