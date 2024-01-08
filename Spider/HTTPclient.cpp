@@ -10,118 +10,148 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/locale.hpp>
 #include <regex>
+#include <fstream>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
-int HTTPclient::performGetRequest(const std::string& host, const std::string& port,
+void HTTPclient::performGetRequest(const std::string& host, const std::string& port,
 	const std::string& target, int version_in) {
 
-	try
-	{
 
-		int version = 11;//version_in == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
+	int version = 11;//version_in == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
 
-		// The io_context is required for all I/O
-		net::io_context ioc;
+	// The io_context is required for all I/O
+	net::io_context ioc;
 
-		// These objects perform our I/O
-		tcp::resolver resolver(ioc);
-		beast::tcp_stream stream(ioc);
+	// These objects perform our I/O
+	tcp::resolver resolver(ioc);
+	beast::tcp_stream stream(ioc);
 
-		//try {
-		//	// Look up the domain name
-			auto const results = resolver.resolve(host, port);
-			/*for (const auto& result : results) {
-				std::cout << "Host: " << result.endpoint().address().to_string() << std::endl;
-				std::cout << "Port: " << result.endpoint().port() << std::endl;
-			}*/
+	//try {
+	//	// Look up the domain name
+	auto const results = resolver.resolve(host, port);
+	/*for (const auto& result : results) {
+		std::cout << "Host: " << result.endpoint().address().to_string() << std::endl;
+		std::cout << "Port: " << result.endpoint().port() << std::endl;
+	}*/
 
-			// Make the connection on the IP address we get from a lookup
-			stream.connect(results);
-		//}
-		//catch (const std::exception& e) {
-		//	std::cerr << "Error during DNS resolution for " << host << e.what() << std::endl;
-		//	// Обработка ошибки или выполнение других действий при возникновении исключения
-		//}
-		// Set up an HTTP GET request message
-		http::request<http::string_body> req{ http::verb::get, target, version };
-		req.set(http::field::host, host);
-		req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+	// Make the connection on the IP address we get from a lookup
+	stream.connect(results);
+	//}
+	//catch (const std::exception& e) {
+	//	std::cerr << "Error during DNS resolution for " << host << e.what() << std::endl;
+	//	// Обработка ошибки или выполнение других действий при возникновении исключения
+	//}
+	// Set up an HTTP GET request message
+	http::request<http::string_body> req{ http::verb::get, target, version };
+	req.set(http::field::host, host);
+	req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
-		// Send the HTTP request to the remote host
-		http::write(stream, req);
+	// Send the HTTP request to the remote host
+	http::write(stream, req);
 
-		// This buffer is used for reading and must be persisted
-		beast::flat_buffer buffer;
+	// This buffer is used for reading and must be persisted
+	beast::flat_buffer buffer;
 
-		// Declare a container to hold the response
-		http::response<http::dynamic_body> res;
+	// Declare a container to hold the response
+	http::response<http::dynamic_body> res;
 
-		// Receive the HTTP response
-		http::read(stream, buffer, res);
+	// Receive the HTTP response
+	http::read(stream, buffer, res);
 
-		// Получение значения заголовка Content-Type для определения типа кодировки
-		auto contentTypeHeader = res.find("Content-Type");
-		//std::cout << "Find charset for page " << host << std::endl;
-		if (contentTypeHeader != res.end()) {
+	// Получение значения заголовка Content-Type для определения типа кодировки
+	auto contentTypeHeader = res.find("Content-Type");
+	//std::cout << "Find charset for page " << host << std::endl;
+	if (contentTypeHeader != res.end()) {
 		//	std::cout << "Content-Type: " << contentTypeHeader->value() << std::endl;
+	}
+	else {
+		//	std::cout << "Content-Type header not found" << std::endl;
+	}
+	std::string TypeHeaderStr = contentTypeHeader->value();
+	std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
+	std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
+	std::sregex_iterator end;
+	std::smatch match;
+	std::string charset;
+	if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
+		if (match.size() > 1) {
+			charset = match[1];
+			//std::cout << "Найден charset: " << charset << std::endl;
+		}
+	}
+
+	std::stringstream response_stream;
+	response_stream << res;
+
+	std::string line;
+	while (std::getline(response_stream, line)) {
+		lines.append(" ");
+		lines.append(line);
+	}
+
+	// Выполним перекодировку
+	if (charset.length() != 0)
+	{
+		const std::string UTF8{ "UTF-8" };
+		//std::cout << "Charset = " << charset << std::endl;
+		std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+		////std::cout << utf8_line;
+		lines = std::move(utf8_line);
+	}
+	else {
+		std::regex charsetPattern_(R"(charset\s*['"]?([^'">\s]+)['"]?\s*[>,;\s*])", std::regex::icase);
+		std::smatch match_;
+		if (std::regex_search(lines, match_, charsetPattern_)) {
+			charset = match_[1];
+			//std::cout << "\n\tCharset для страницы : " << host << "\t" << charset << std::endl;
+			const std::string UTF8{ "UTF-8" };
+			std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
+			lines = std::move(utf8_line);
+			/*std::ofstream logfile("log.txt", std::ios_base::app);
+			if (logfile.is_open()) {
+				logfile << "Charset для страницы: " << host << "\t" << charset << std::endl;
+				logfile.close();
+			}
+			else {
+				std::cerr << "Unable to open log file" << std::endl;
+			}*/
 		}
 		else {
-		//	std::cout << "Content-Type header not found" << std::endl;
+			//std::cout << "Charset meta tag not found." << std::endl;
+			//std::cout << "\n\tCharset НЕ НАЙДЕН в : " << contentTypeHeader->value() << std::endl;
+			//std::ofstream logfile("log.txt", std::ios_base::app);
+			//if (logfile.is_open()) {
+			//	logfile << "Charset НЕ НАЙДЕН для страницы: " << host << "contentTypeHeader" << contentTypeHeader->value() << std::endl;
+			//	logfile << lines << std::endl;;
+			//	logfile.close();
+			//}
+			//else {
+			//	std::cerr << "Unable to open log file" << std::endl;
+			//}
+			lines.clear();
+			beast::error_code ec;
+			stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+			throw std::domain_error("\nUndefined charset for page: " + host + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
 		}
-		std::string TypeHeaderStr = contentTypeHeader->value();
-		std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
-		std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
-		std::sregex_iterator end;
-		std::smatch match;
-		std::string charset;
-		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
-			if (match.size() > 1) {
-				charset = match[1];
-		//		std::cout << "Найден charset: " << charset << std::endl;
-			}
-		}
-
-		std::stringstream response_stream;
-		response_stream << res;
-
-		std::string line;
-		while (std::getline(response_stream, line)) {
-			lines.append(" ");
-			lines.append(line);
-		}
-
-		// Выполним перекодировку
-		if (charset.length() != 0)
-		{
-			const std::string UTF8{ "UTF-8" };
-			//std::cout << "Charset = " << charset << std::endl;
-			std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
-			////std::cout << utf8_line;
-			lines = std::move(utf8_line);
-		}
-
-		// Gracefully close the socket
-		beast::error_code ec;
-		stream.socket().shutdown(tcp::socket::shutdown_both, ec);
-
-		// not_connected happens sometimes
-		// so don't bother reporting it.
-		//
-		if (ec && ec != beast::errc::not_connected)
-			throw beast::system_error{ ec };
-
-		// If we get here then the connection is closed gracefully
 	}
-	catch (std::exception const& e)
+
+	// Gracefully close the socket
+	beast::error_code ec;
+	stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+	// not_connected happens sometimes
+	// so don't bother reporting it.
+	//
+	if (ec && ec != beast::errc::not_connected)
 	{
-		std::cerr << "Error: " << e.what() << std::endl;
-		return EXIT_FAILURE;
+		throw beast::system_error{ ec };
 	}
-	return EXIT_SUCCESS;
+
+	// If we get here then the connection is closed gracefully
 }
 
 std::string HTTPclient::getData() {
