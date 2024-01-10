@@ -30,21 +30,26 @@ std::vector<std::string> findByFrequency(std::map<std::string, int>& linkWeight)
 std::vector<std::string> finder(std::string inSeachString, database& DB) {
 	std::vector<std::string> seachResults;
 
-	// Удаление знаков препинани¤ и скобок
-	std::regex pattern_punctuation(R"([[:punct:]()])");
-	inSeachString = std::regex_replace(inSeachString, pattern_punctuation, " ");
+	// Удалим все символы, которые не буквы и не цифры
+	try
+	{
+		std::regex pattern_keep_alphanumeric(R"([^0-9
+ a b c d e f g h i j k l m n o p q r s t u v w x y z
+ а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я
+ А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я
+ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z])");
+		inSeachString = std::regex_replace(inSeachString, pattern_keep_alphanumeric, " ");
 
-	// Удалени¤ кавычек ("), одинарных (') и дефисов (-)
-	std::regex pattern_remove_quotes_and_dashes(R"([\"'-])");
-	inSeachString = std::regex_replace(inSeachString, pattern_remove_quotes_and_dashes, "");
-
-	// Удаление чисел (всех слов с числами)
-	std::regex pattern_numbers("\\b\\w*\\d+\\w*\\b");
-	inSeachString = std::regex_replace(inSeachString, pattern_numbers, " ");
-
-	// Удаление лишних пробелов
-	std::regex SPACEpattern(R"(\s+)");
-	inSeachString = std::regex_replace(inSeachString, SPACEpattern, "_");
+		// Удаление лишних пробелов
+		std::regex SPACEpattern(R"(\s+)");
+		inSeachString = std::regex_replace(inSeachString, SPACEpattern, "_");
+	}
+	catch (const std::exception& ex) {
+		std::cout << __FILE__ << ", line: " << __LINE__ << std::endl;
+		std::cout << "Regular expression error: ";
+		std::string except = ex.what();
+		std::cout << "\n" << except;
+	}
 
 	// Переведем в нижний регистр
 	boost::locale::generator gen;
@@ -82,13 +87,12 @@ std::vector<std::string> finder(std::string inSeachString, database& DB) {
 
 	// Вектор для хранения слов запроса, порядок слов соответсвует resultsPerWord
 	// Это проще, чем городить ещё один set
-	std::vector<std::string> wordsInOrder; 
+	std::vector<std::string> wordsInOrder;
 
 	// Набор для хранения удельных весов каждой ссылки
 	std::map<std::string, int> linkWeight;
 
 	try {
-		DB.SetConnection("localhost", "indexator", "postgres", "cfhvf810", 5432);
 		for (const auto& word : setInWords)
 		{
 			try {
