@@ -27,15 +27,21 @@ set(PROJECT_SOURCES
 )
 
 # Поиск и подключение Boost
-find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
+#find_package(Boost 1.81.0 COMPONENTS locale REQUIRED)
+find_package(Boost 1.81.0 COMPONENTS system thread locale REQUIRED)
+
+find_package(OpenSSL REQUIRED)
 
 add_executable(Spider ${PROJECT_SOURCES})
 
 # Включение директорий Boost
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Связывание библиотеки Boost с проектом
-target_link_libraries(Spider ${Boost_LIBRARIES})
+#target_link_libraries(Spider ${Boost_LIBRARIES})
+target_link_libraries(Spider ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
+
 
 # Включение директорий Gumbo
 include_directories(${GUMBO_INCLUDE_DIR})

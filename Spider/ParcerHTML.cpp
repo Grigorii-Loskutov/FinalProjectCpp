@@ -95,11 +95,28 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 		if ((href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
 			std::string link = href->value;
 			if (!link.empty()) {
+
+				// Переведем в нижний регистр
+				boost::locale::generator gen;
+				std::locale loc = gen(""); // Используем локаль по умолчанию
+				link = boost::locale::to_lower(link, loc);
+
 				//Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
 				 //поэтому нужно внутренние сслыки дополнить полным адресом
 				std::string const http_pref = "http://";
+				std::string const https_pref = "https://";
+
+				bool isHTTP = false;
+				bool isHTTPS = false;
 				if ((link.length() >= http_pref.length() &&
-					link.compare(0, http_pref.length(), http_pref) != 0) || (link.length() < http_pref.length())) {
+					link.compare(0, http_pref.length(), http_pref) == 0)) {
+					isHTTP = true;
+				}
+				if ((link.length() >= https_pref.length() &&
+					link.compare(0, https_pref.length(), https_pref) == 0)) {
+					isHTTPS = true;
+				}
+				if ((isHTTP == false) && (isHTTPS == false)) {
 					if (link[0] == '/') {
 						link = SourceLink + link;
 					}
@@ -107,8 +124,8 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 						link = SourceLink + "/" + link;
 					}
 				}
-				std::regex pattern_http(http_pref);
-				link = std::regex_replace(link, pattern_http, "");
+				//std::regex pattern_http(http_pref);
+				//link = std::regex_replace(link, pattern_http, "");
 				std::regex pattern_slash(R"(/$)");
 				link = std::regex_replace(link, pattern_slash, "");
 
@@ -116,7 +133,7 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 				std::regex fileExtensionRegex(R"(\.(pdf|djvu|jpeg|jpg|doc|tiff|png|xls|css|zip|tar|7zip|bmp)$)");
 				// Проверяем расширение файла с помощью регулярного выражения
 				if (!std::regex_search(link, fileExtensionRegex)) {
-					// Если расширение соответствует указанным, установим добавим link
+					// Если расширение соответствует указанным, добавим link
 					Links.insert(link);
 				}
 			}

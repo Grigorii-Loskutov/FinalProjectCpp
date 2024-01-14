@@ -5,6 +5,9 @@
 #include <map>
 #include <exception>
 #include "database.h"
+#include <regex>
+#include <iterator>
+#include <vector>
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
 
@@ -17,17 +20,38 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	std::map<std::string, int> WordIdPair; // Идентификаторы и соответсвующие слова в таблице
 	std::set<std::string> wordsInDB;		// Слова, полученные из базы данных
 	std::set<std::string> wordsInPage;	    // Слова, наденные на странице (для проверки наличия их в базе данных)
-	std::string host;
-	std::string target;
+	std::string host;						// Адрес хоста
+	std::string target;						// Ресурс на хосте
+	bool isHTTPS = false;					// Поддерживает ли хост https
 
-	// Разделим адрес на host и target
-	size_t slashPos = inLink.find("/");
-	if (slashPos != std::string::npos) {
-		host = inLink.substr(0, slashPos);
-		target = inLink.substr(slashPos);
+	// Функция возвращает кортеж: (адрес индексируемой страницы, set новых ссылок, набор: (слово, частота))
+	std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult;
+
+	//Определим тип сервера: http или https
+	const std::string const http_pref = "http://";
+	const std::string const https_pref = "https://";
+	if (inLink.compare(0, https_pref.length(), https_pref) == 0) {
+		isHTTPS = true;
+		std::regex pattern_https(https_pref);
+		host = std::regex_replace(inLink, pattern_https, "");
+	}
+	else if (inLink.compare(0, http_pref.length(), http_pref) == 0) {
+		isHTTPS = false;
+		std::regex pattern_http(http_pref);
+		host = std::regex_replace(inLink, pattern_http, "");
 	}
 	else {
 		host = inLink;
+	}
+
+	// Разделим адрес на host и target
+	size_t slashPos = host.find("/");
+	if (slashPos != std::string::npos) {
+		host = host.substr(0, slashPos);
+		target = host.substr(slashPos);
+	}
+	else {
+		host = host;
 		target = "/";
 	}
 
@@ -35,8 +59,14 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		HTTPclient client; // Клиент для скачивания страницы
 		std::string response = ""; // Строка с ответом
 
-		client.performGetRequest(host, "80", target, 5);
-
+		if (isHTTPS)
+		{
+			client.performGetRequest(host, "443", target, 11);
+		}
+		else
+		{
+			client.performGetRequest(host, "80", target, 11);
+		}
 		response = client.getData();
 		try
 		{
@@ -145,7 +175,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.CloseConnection();
 				return Links;
 			}
-
+			indexatorResult = std::make_tuple(inLink, Links, Frequencies);
 		}
 		catch (const std::exception& ex) {
 			std::cout << "\n Fail to parce page " + inLink << ": ";
