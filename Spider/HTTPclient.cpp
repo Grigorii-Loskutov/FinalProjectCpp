@@ -20,15 +20,76 @@ namespace net = boost::asio;
 namespace ssl = net::ssl;
 using tcp = net::ip::tcp;
 
+void HTTPclient::handleRedirect(const std::string& newLink, const std::string& port, int version) {
+	std::string newHost;
+	std::string newTarget;
+	std::string newPort;
+	//Определим тип сервера: http или https
+	const std::string http_pref = "http://";
+	const std::string https_pref = "https://";
+	bool isHTTPS = false;
+	bool isHTTP = false;
+	if (newLink.compare(0, https_pref.length(), https_pref) == 0) {
+		isHTTPS = true;
+	}
+	else if (newLink.compare(0, http_pref.length(), http_pref) == 0) {
+		isHTTP = false;
+	}
+	else {
+		newHost = newLink;
+		// Если нет префикса, определяем протокол по текущему порту
+		isHTTPS = (port == "443");
+		isHTTP = (port == "80");
+	}
+
+	// Извлечем порт из URL, если он указан
+	size_t portDelimiter = newHost.find(':');
+	if (portDelimiter != std::string::npos) {
+		newPort = newHost.substr(portDelimiter + 1);
+		newHost = newHost.substr(0, portDelimiter);
+	}
+	else {
+		// Если порт не указан, используйте стандартный порт
+		if (isHTTPS) {
+			newPort = "443";
+		}
+		else if (isHTTP) {
+			newPort = "80";
+		}
+	}
+	std::regex pattern_https(https_pref);
+	std::regex pattern_http(http_pref);
+	newHost = (isHTTPS) ? std::regex_replace(newLink, pattern_https, "") : std::regex_replace(newLink, pattern_http, "");
+
+	// Разделим адрес на host и target
+
+	size_t slashPos = newHost.find("/");
+	if (slashPos != std::string::npos) {
+		std::string temp_str = newHost;
+		newHost = newHost.substr(0, slashPos);
+		newTarget = temp_str.substr(slashPos);
+	}
+	else {
+		newHost = newHost;
+		newTarget = "/";
+	}
+	if (isHTTPS) { newPort = "443"; }
+	else { newPort = "80"; }
+	/*std::cout << "New host: " << newHost << std::endl;
+	std::cout << "New Port: " << newPort << std::endl;
+	std::cout << "New target: " << newTarget << std::endl;*/
+	performGetRequest(newHost, newPort, newTarget, version);
+}
+
 void HTTPclient::performGetRequest(const std::string& host, const std::string& port,
 	const std::string& target, int version_in) {
 
 	// Вресия HTML
 	int version = version_in;
-	
+
 	// Тип кодировки
-	std::string charset;		
-	
+	std::string charset;
+
 	// Для хранени результатов ответа сервера перед обработкой
 	std::stringstream response_stream;
 
@@ -63,18 +124,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		// Receive the HTTP response
 		http::read(stream, buffer, res);
 
-		// Отработка редиректа:
-		//if (res.result() == http::status::moved_permanently) {
-		//	auto newLocation = res.find(http::field::location);
-		//	if (newLocation != res.end()) {
-		//		// Повторно выполнить запрос по новому адресу
-		//		std::string newTarget(newLocation->value());
-		//		std::cout << "New Location: " << newTarget;
-		//		performGetRequest(host, port, newTarget, version);
-		//		return;
-		//	}
-		//}
-
+		// Отработка редиректа
 		if (res.result() == http::status::moved_permanently) {
 			auto newLocation = res.find(http::field::location);
 			if (newLocation != res.end()) {
@@ -84,65 +134,10 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 				std::string newTarget;
 				std::string newPort;
 				std::cout << "\nNew Location: " << newLink << std::endl;
-				//Определим тип сервера: http или https
-				const std::string http_pref = "http://";
-				const std::string https_pref = "https://";
-				bool isHTTPS = false;
-				bool isHTTP = false;
-				if (newLink.compare(0, https_pref.length(), https_pref) == 0) {
-					isHTTPS = true;
-				}
-				else if (newLink.compare(0, http_pref.length(), http_pref) == 0) {
-					isHTTP = false;
-				}
-				else {
-					newHost = newLink;
-					// Если нет префикса, оперделяем протокол по текущему порту
-					isHTTPS = (port == "443");
-					isHTTP = (port == "80");
-				}
-
-				// Извлечем порт из URL, если он указан
-				size_t portDelimiter = newHost.find(':');
-				if (portDelimiter != std::string::npos) {
-					newPort = newHost.substr(portDelimiter + 1);
-					newHost = newHost.substr(0, portDelimiter);
-				}
-				else {
-					// Если порт не указан, используйте стандартный порт
-					if (isHTTPS) {
-						newPort = "443";
-					}
-					else if (isHTTP) {
-						newPort = "80";
-					}
-				}
-				std::regex pattern_https(https_pref);
-				std::regex pattern_http(http_pref);
-				newHost = (isHTTPS) ? std::regex_replace(newLink, pattern_https, "") : std::regex_replace(newLink, pattern_http, "");
-
-				// Разделим адрес на host и target
-				//std::cout << "New host: " << newHost << std::endl;
-				size_t slashPos = newHost.find("/");
-				if (slashPos != std::string::npos) {
-					std::string temp_str = newHost;
-					newHost = newHost.substr(0, slashPos);
-					newTarget = temp_str.substr(slashPos);
-				}
-				else {
-					newHost = newHost;
-					newTarget = "/";
-				}
-				if (isHTTPS) { newPort = "443"; }
-				else { newPort = "80"; }
-				//std::cout << "New host: " << newHost << std::endl;
-				//std::cout << "New Port: " << newPort << std::endl;
-				//std::cout << "New target: " << newTarget << std::endl;
-				performGetRequest(newHost, newPort, newTarget, version);
+				handleRedirect(newLink, port, version);
 				return;
 			}
 		}
-
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
 
@@ -153,7 +148,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		std::smatch match;
 
 		// Определим charset из Content-Type
-		
+
 		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
 			if (match.size() > 1) {
 				charset = match[1];
@@ -228,7 +223,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		// Receive the HTTP response
 		http::read(stream, buffer, res);
 
-		// Отработка редиректа:
+		// Отработка редиректа
 		if (res.result() == http::status::moved_permanently) {
 			auto newLocation = res.find(http::field::location);
 			if (newLocation != res.end()) {
@@ -238,61 +233,10 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 				std::string newTarget;
 				std::string newPort;
 				std::cout << "\nNew Location: " << newLink << std::endl;
-				//Определим тип сервера: http или https
-				const std::string http_pref = "http://";
-				const std::string https_pref = "https://";
-				bool isHTTPS = false;
-				bool isHTTP = false;
-				if (newLink.compare(0, https_pref.length(), https_pref) == 0) {
-					isHTTPS = true;
-				}
-				else if (newLink.compare(0, http_pref.length(), http_pref) == 0) {
-					isHTTP = false;
-				}
-				else {
-					newHost = newLink;
-					// Если нет префикса, оперделяем протокол по текущему порту
-					isHTTPS = (port == "443");
-					isHTTP = (port == "80");
-				}
-
-				// Извлечем порт из URL, если он указан
-				size_t portDelimiter = newHost.find(':');
-				if (portDelimiter != std::string::npos) {
-					newPort = newHost.substr(portDelimiter + 1);
-					newHost = newHost.substr(0, portDelimiter);
-				}
-				else {
-					// Если порт не указан, используйте стандартный порт
-					if (isHTTPS) {
-						newPort = "443";
-					}
-					else if (isHTTP) {
-						newPort = "80";
-					}
-				}
-				std::regex pattern_https(https_pref);
-				std::regex pattern_http(http_pref);
-				newHost = (isHTTPS) ? std::regex_replace(newLink, pattern_https, "") : std::regex_replace(newLink, pattern_http, "");
-
-				// Разделим адрес на host и target
-				size_t slashPos = newHost.find("/");
-				if (slashPos != std::string::npos) {
-					std::string temp_str = newHost;
-					newHost = newHost.substr(0, slashPos);
-					newTarget = temp_str.substr(slashPos);
-				}
-				else {
-					newHost = newHost;
-					newTarget = "/";
-				}
-				if (isHTTPS) { newPort = "443"; }
-				else { newPort = "80"; }
-				performGetRequest(newHost, newPort, newTarget, version);
+				handleRedirect(newLink, port, version);
 				return;
 			}
 		}
-
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
 
@@ -305,7 +249,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		response_stream << res;
 
 		// Определим charset из Content-Type
-		
+
 		if (std::regex_search(TypeHeaderStr, match, charsetPattern)) {
 			if (match.size() > 1) {
 				charset = match[1];
@@ -360,7 +304,6 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		lines = std::move(utf8_line);
 	}
 }
-
 std::string HTTPclient::getData() {
 
 	if (lines.length()) return lines;

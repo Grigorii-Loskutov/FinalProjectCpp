@@ -9,7 +9,6 @@
 #include <regex>
 #include <iterator>
 
-
 std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexator(std::string inLink) {
 
 	std::set<std::string> Links; // Набор ссылок, найденных на странице
@@ -61,8 +60,16 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 		HTTPclient client; // Клиент для скачивания страницы
 		std::string response = ""; // Строка с ответом
 
-		client.performGetRequest(host, "80", target, 5);
+		if (isHTTPS)
+		{
+			client.performGetRequest(host, "443", target, 11);
+		}
+		else
+		{
+			client.performGetRequest(host, "80", target, 11);
+		}
 		response = client.getData();
+
 		try
 		{
 			// Пробуем парсить страницу
