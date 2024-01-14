@@ -4,13 +4,10 @@
 #include <set>
 #include <map>
 #include <exception>
-<<<<<<< Updated upstream
 #include "database.h"
-=======
 #include <regex>
 #include <iterator>
 #include <vector>
->>>>>>> Stashed changes
 #include "HTTPclient.h"
 #include "ParcerHTML.h"
 
@@ -27,13 +24,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	std::string target;						// Ресурс на хосте
 	bool isHTTPS = false;					// Поддерживает ли хост https
 
-<<<<<<< Updated upstream
-	// Разделим адрес на host и target
-	size_t slashPos = inLink.find("/");
-	if (slashPos != std::string::npos) {
-		host = inLink.substr(0, slashPos);
-		target = inLink.substr(slashPos);
-=======
 	// Функция возвращает кортеж: (адрес индексируемой страницы, set новых ссылок, набор: (слово, частота))
 	std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult;
 
@@ -49,7 +39,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		isHTTPS = false;
 		std::regex pattern_http(http_pref);
 		host = std::regex_replace(inLink, pattern_http, "");
->>>>>>> Stashed changes
 	}
 	else {
 		host = inLink;
@@ -69,11 +58,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	try {
 		HTTPclient client; // Клиент для скачивания страницы
 		std::string response = ""; // Строка с ответом
-<<<<<<< Updated upstream
 
-		client.performGetRequest(host, "80", target, 5);
-
-=======
 		if (isHTTPS)
 		{
 			client.performGetRequest(host, "443", target, 11);
@@ -82,7 +67,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		{
 			client.performGetRequest(host, "80", target, 11);
 		}
->>>>>>> Stashed changes
 		response = client.getData();
 		try
 		{
@@ -90,7 +74,6 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 			ParcerHTML parcerHTML(response, inLink);
 			Links = parcerHTML.getLinks();
 			Frequencies = parcerHTML.getFrequencies();
-<<<<<<< Updated upstream
 
 			for (const auto& line : Links) {
 				//std::cout << line << std::endl;
@@ -192,10 +175,7 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 				DB.CloseConnection();
 				return Links;
 			}
-
-=======
 			indexatorResult = std::make_tuple(inLink, Links, Frequencies);
->>>>>>> Stashed changes
 		}
 		catch (const std::exception& ex) {
 			std::cout << "\n Fail to parce page " + inLink << ": ";
