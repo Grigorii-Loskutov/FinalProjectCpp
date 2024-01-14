@@ -1,11 +1,13 @@
+#include "HTTPclient.h"
+#include "ParcerHTML.h"
 #include "indexator.h"
 #include <iostream>
 #include <string.h>
 #include <set>
 #include <map>
 #include <exception>
-#include "HTTPclient.h"
-#include "ParcerHTML.h"
+#include <regex>
+#include <iterator>
 
 
 std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexator(std::string inLink) {
@@ -16,20 +18,42 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 	std::map<std::string, int> WordIdPair; // Идентификаторы и соответсвующие слова в таблице
 	std::set<std::string> wordsInDB;		// Слова, полученные из базы данных
 	std::set<std::string> wordsInPage;	    // Слова, наденные на странице (для проверки наличия их в базе данных)
-	std::string host;
-	std::string target;
+	std::string host;						// Адрес хоста
+	std::string target;						// Ресурс на хосте
+	bool isHTTPS = false;					// Поддерживает ли хост https
 
 	// Функция возвращает кортеж: (адрес индексируемой страницы, set новых ссылок, набор: (слово, частота))
 	std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult;
 
-	// Разделим адрес на host и target
-	size_t slashPos = inLink.find("/");
-	if (slashPos != std::string::npos) {
-		host = inLink.substr(0, slashPos);
-		target = inLink.substr(slashPos);
+	//Определим тип сервера: http или https
+	const std::string http_pref = "http://";
+	const std::string https_pref = "https://";
+	if (inLink.compare(0, https_pref.length(), https_pref) == 0) {
+		isHTTPS = true;
+		//std::regex pattern_https(https_pref);
+		//host = std::regex_replace(inLink, pattern_https, "");
+	}
+	else if (inLink.compare(0, http_pref.length(), http_pref) == 0) {
+		isHTTPS = false;
+		//std::regex pattern_http(http_pref);
+		//host = std::regex_replace(inLink, pattern_http, "");
 	}
 	else {
 		host = inLink;
+	}
+	std::regex pattern_https(https_pref);
+	std::regex pattern_http(http_pref);
+	host = (isHTTPS) ? std::regex_replace(inLink, pattern_https, "") : std::regex_replace(inLink, pattern_http, "");
+
+	// Разделим адрес на host и target
+	size_t slashPos = host.find("/");
+	if (slashPos != std::string::npos) {
+		std::string temp_str = host;
+		host = host.substr(0, slashPos);
+		target = temp_str.substr(slashPos);
+	}
+	else {
+		host = host;
 		target = "/";
 	}
 
