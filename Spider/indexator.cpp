@@ -49,6 +49,13 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 	if (slashPos != std::string::npos) {
 		std::string temp_str = host;
 		host = host.substr(0, slashPos);
+
+		// Найдем символ "?" в temp_str
+		size_t questionMarkPos = temp_str.find("?");
+		if (questionMarkPos != std::string::npos) {
+			// Если "?" найден, обрежем строку до этого символа
+			temp_str = temp_str.substr(0, questionMarkPos);
+		}
 		target = temp_str.substr(slashPos);
 	}
 	else {
