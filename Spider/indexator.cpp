@@ -28,27 +28,31 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 	std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexatorResult;
 
 	//Определим тип сервера: http или https
-	const std::string const http_pref = "http://";
-	const std::string const https_pref = "https://";
+	const std::string http_pref = "http://";
+	const std::string https_pref = "https://";
 	if (inLink.compare(0, https_pref.length(), https_pref) == 0) {
 		isHTTPS = true;
-		std::regex pattern_https(https_pref);
-		host = std::regex_replace(inLink, pattern_https, "");
+		//std::regex pattern_https(https_pref);
+		//host = std::regex_replace(inLink, pattern_https, "");
 	}
 	else if (inLink.compare(0, http_pref.length(), http_pref) == 0) {
 		isHTTPS = false;
-		std::regex pattern_http(http_pref);
-		host = std::regex_replace(inLink, pattern_http, "");
+		//std::regex pattern_http(http_pref);
+		//host = std::regex_replace(inLink, pattern_http, "");
 	}
 	else {
 		host = inLink;
 	}
+	std::regex pattern_https(https_pref);
+	std::regex pattern_http(http_pref);
+	host = (isHTTPS) ? std::regex_replace(inLink, pattern_https, "") : std::regex_replace(inLink, pattern_http, "");
 
 	// Разделим адрес на host и target
 	size_t slashPos = host.find("/");
 	if (slashPos != std::string::npos) {
+		std::string temp_str = host;
 		host = host.substr(0, slashPos);
-		target = host.substr(slashPos);
+		target = temp_str.substr(slashPos);
 	}
 	else {
 		host = host;

@@ -13,4 +13,5 @@ public:
 	std::string getData();
 private:
 	std::string lines; // получим HTML одной строкой
+	void handleRedirect(const std::string& newLink, const std::string& port, int version);
 };

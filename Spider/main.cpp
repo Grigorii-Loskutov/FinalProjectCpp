@@ -220,7 +220,7 @@ int main()
 	}
 
 	// Запустим индексатор для первой страницы поиска
-	std::set<std::string> inLinkSet = indexator(DB, SpiderStarPageURL);
+	std::set<std::string> inLinkSet = indexator(DB, SpiderStarPageURL); SpiderDepth--;
 
 	recursiveMultiTreadIndexator(DB, SpiderDepth, inLinkSet);
 
