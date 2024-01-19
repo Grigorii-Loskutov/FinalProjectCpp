@@ -182,7 +182,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		load_root_certificates(ctx);
 
 		// Verify the remote server's certificate
-		ctx.set_verify_mode(ssl::verify_none);
+		ctx.set_verify_mode(ssl::verify_peer);
 
 		// These objects perform our I/O
 		tcp::resolver resolver(ioc);
