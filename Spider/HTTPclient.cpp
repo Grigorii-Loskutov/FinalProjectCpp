@@ -62,11 +62,19 @@ void HTTPclient::handleRedirect(const std::string& newLink, const std::string& p
 	newHost = (isHTTPS) ? std::regex_replace(newLink, pattern_https, "") : std::regex_replace(newLink, pattern_http, "");
 
 	// Разделим адрес на host и target
-	std::cout << "New host: " << newHost << std::endl;
+	//std::cout << "New host: " << newHost << std::endl;
 	size_t slashPos = newHost.find("/");
 	if (slashPos != std::string::npos) {
 		std::string temp_str = newHost;
 		newHost = newHost.substr(0, slashPos);
+
+		// Найдем символ "?" в temp_str
+		size_t questionMarkPos = temp_str.find("?");
+		if (questionMarkPos != std::string::npos) {
+			// Если "?" найден, обрежем строку до этого символа
+			temp_str = temp_str.substr(0, questionMarkPos);
+		}
+
 		newTarget = temp_str.substr(slashPos);
 	}
 	else {
@@ -141,7 +149,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
 
-		std::string TypeHeaderStr = contentTypeHeader->value();
+		std::string TypeHeaderStr = std::string(contentTypeHeader->value());
 		std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
 		std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
 		std::sregex_iterator end;
@@ -240,7 +248,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		// Получение значения заголовка Content-Type для определения типа кодировки
 		auto contentTypeHeader = res.find("Content-Type");
 
-		std::string TypeHeaderStr = contentTypeHeader->value();
+		std::string TypeHeaderStr = std::string(contentTypeHeader->value());
 		std::regex charsetPattern(R"(charset=([^\s;]+))", std::regex::icase);
 		std::sregex_iterator it(TypeHeaderStr.begin(), TypeHeaderStr.end(), charsetPattern);
 		std::sregex_iterator end;
