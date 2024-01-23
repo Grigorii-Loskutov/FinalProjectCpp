@@ -259,7 +259,7 @@ handle_request(
 		for (const auto& searchResultString : searchResults)
 		{
 			// Выведем результаты в виде кликабельных ссылок
-			responseBody << "<p><a href=\"http://" << searchResultString << "\">" << searchResultString << "</a></p>\n";
+			responseBody << "<p><a href=\"" << searchResultString << "\">" << searchResultString << "</a></p>\n";
 			++linkIter;
 			if (linkIter > 10) break;
 		}
