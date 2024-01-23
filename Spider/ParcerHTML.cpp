@@ -97,9 +97,9 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 			if (!link.empty()) {
 
 				// Переведем в нижний регистр
-				boost::locale::generator gen;
-				std::locale loc = gen(""); // Используем локаль по умолчанию
-				link = boost::locale::to_lower(link, loc);
+				//boost::locale::generator gen;
+				//std::locale loc = gen(""); // Используем локаль по умолчанию
+				//link = boost::locale::to_lower(link, loc);
 
 				//Сссылки внутри сайта начинаются не с "http://", а с "/" или с просто текста ссылки,
 				 //поэтому нужно внутренние сслыки дополнить полным адресом
