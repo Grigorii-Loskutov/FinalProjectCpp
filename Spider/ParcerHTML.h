@@ -14,7 +14,7 @@ private:
 	void findLinks(GumboNode* node, const std::string& SourceLink);
 public:
 	//ParcerHTML(std::vector<std::string> HTML_strings);
-	ParcerHTML(std::string HTML_strings, std::string SourceLink);
+	ParcerHTML(std::string HTML_strings, std::string SourceHost);
 	std::set<std::string> getLinks();
 	std::string getLine();
 	std::vector<std::string> getWords();

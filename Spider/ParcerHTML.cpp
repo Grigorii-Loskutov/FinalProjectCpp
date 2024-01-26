@@ -13,11 +13,11 @@
 #define TO_STRING(x) STRINGIZE(x)
 
 //ParcerHTML::ParcerHTML(std::vector<std::string> HTML_strings) {
-ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceLink) {
+ParcerHTML::ParcerHTML(std::string HTML_strings, std::string SourceHost) {
 	if (HTML_strings.length() == 0) { throw std::domain_error(std::string(__FILE__) + ": no strings in input vector: " + std::string(TO_STRING(HTML_strings))); }
 
 	GumboOutput* output = gumbo_parse(HTML_strings.c_str());
-	findLinks(output->root, SourceLink);
+	findLinks(output->root, SourceHost);
 
 	gumbo_destroy_output(&kGumboDefaultOptions, output);
 
@@ -89,7 +89,7 @@ std::map<std::string, int> ParcerHTML::getFrequencies() {
 	return Frequencies;
 }
 
-void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
+void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceHost) {
 	if (node->type == GUMBO_NODE_ELEMENT) {
 		GumboAttribute* href;
 		if ((href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
@@ -118,10 +118,10 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 				}
 				if ((isHTTP == false) && (isHTTPS == false)) {
 					if (link[0] == '/') {
-						link = SourceLink + link;
+						link = SourceHost + link;
 					}
 					else {
-						link = SourceLink + "/" + link;
+						link = SourceHost + "/" + link;
 					}
 				}
 				//std::regex pattern_http(http_pref);
@@ -142,7 +142,7 @@ void ParcerHTML::findLinks(GumboNode* node, const std::string& SourceLink) {
 	if (node->type == GUMBO_NODE_ELEMENT || node->type == GUMBO_NODE_DOCUMENT) {
 		GumboVector* children = &node->v.element.children;
 		for (unsigned int i = 0; i < children->length; ++i) {
-			findLinks(static_cast<GumboNode*>(children->data[i]), SourceLink);
+			findLinks(static_cast<GumboNode*>(children->data[i]), SourceHost);
 		}
 	}
 }

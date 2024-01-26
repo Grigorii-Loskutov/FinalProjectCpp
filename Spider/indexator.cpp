@@ -83,7 +83,14 @@ std::set<std::string> indexator(database& DB, std::string inLink) {
 		try
 		{
 			// Пробуем парсить страницу
-			ParcerHTML parcerHTML(response, inLink);
+			if (isHTTPS)
+			{
+				host = https_pref + host;
+			}
+			else {
+				host = http_pref + host;
+			}
+			ParcerHTML parcerHTML(response, host);
 			Links = parcerHTML.getLinks();
 			Frequencies = parcerHTML.getFrequencies();
 
