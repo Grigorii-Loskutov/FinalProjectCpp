@@ -80,7 +80,14 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 		try
 		{
 			// Пробуем парсить страницу
-			ParcerHTML parcerHTML(response, inLink);
+			if (isHTTPS) 
+			{
+				host = https_pref + host;
+			}
+			else {
+				host = http_pref + host;
+			}
+			ParcerHTML parcerHTML(response, host);
 			Links = parcerHTML.getLinks();
 			Frequencies = parcerHTML.getFrequencies();
 			indexatorResult = std::make_tuple(inLink, Links, Frequencies);
