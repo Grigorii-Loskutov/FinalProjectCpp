@@ -89,8 +89,11 @@ void HTTPclient::handleRedirect(const std::string& newLink, const std::string& p
 	performGetRequest(newHost, newPort, newTarget, version);
 }
 
-void HTTPclient::performGetRequest(const std::string& host, const std::string& port,
+std::string HTTPclient::performGetRequest(const std::string& host, const std::string& port,
 	const std::string& target, int version_in) {
+
+	//Сссылка, полученная в результате редиректа
+	redirectLink = "";
 
 	// Вресия HTML
 	int version = version_in;
@@ -138,12 +141,10 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 			if (newLocation != res.end()) {
 				// Повторно выполнить запрос по новому адресу
 				std::string newLink(newLocation->value());
-				std::string newHost;
-				std::string newTarget;
-				std::string newPort;
+				redirectLink = newLink;
 				std::cout << "\nNew Location: " << newLink << std::endl;
 				handleRedirect(newLink, port, version);
-				return;
+				return redirectLink;
 			}
 		}
 		// Получение значения заголовка Content-Type для определения типа кодировки
@@ -237,12 +238,10 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 			if (newLocation != res.end()) {
 				// Повторно выполнить запрос по новому адресу
 				std::string newLink(newLocation->value());
-				std::string newHost;
-				std::string newTarget;
-				std::string newPort;
+				redirectLink = newLink;
 				std::cout << "\nNew Location: " << newLink << std::endl;
 				handleRedirect(newLink, port, version);
-				return;
+				return redirectLink;
 			}
 		}
 		// Получение значения заголовка Content-Type для определения типа кодировки
@@ -266,9 +265,11 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 
 		// Gracefully close the socket
 		beast::error_code ec;
+		//stream.next_layer().cancel();
+		stream.next_layer().close();
 		stream.shutdown(ec);
-
-		if (ec == net::error::eof)
+		if (ec && ec != beast::errc::not_connected)
+		//if (ec == net::error::eof)
 		{
 			// Rationale:
 			// http://stackoverflow.com/questions/25587403/boost-asio-ssl-async-shutdown-always-finishes-with-an-error
@@ -296,11 +297,10 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 			charset = match_[1];
 		}
 		else {
-			//lines.clear();
-			//beast::error_code ec;
-			//stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+			lines.clear();
+			redirectLink.clear();
 			// Проверено с помощью логиривания, что такая страница плохая, из неё данные не нужно брать
-			//throw std::domain_error("\nUndefined charset for page: " + host + target + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
+			throw std::domain_error("\nUndefined charset for page: " + host + target + /*"\n" + lines +*/ "\n" + "-> most likely has been moved\n");
 		}
 	}
 
@@ -311,6 +311,7 @@ void HTTPclient::performGetRequest(const std::string& host, const std::string& p
 		std::string utf8_line = boost::locale::conv::between(lines, UTF8, charset);
 		lines = std::move(utf8_line);
 	}
+	return "";
 }
 std::string HTTPclient::getData() {
 

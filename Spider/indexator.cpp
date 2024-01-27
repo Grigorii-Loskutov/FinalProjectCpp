@@ -11,6 +11,7 @@
 
 std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> indexator(std::string inLink) {
 
+	std::string linkToDB; //ссылка для добавления в БД
 	std::set<std::string> Links; // Набор ссылок, найденных на странице
 	std::map<std::string, int> Frequencies; // Частоты слов, найденных на странице
 	int link_id; // Идентификатор страницы, которую индексируем
@@ -65,42 +66,59 @@ std::tuple <std::string, std::set<std::string>, std::map<std::string, int>> inde
 
 	try {
 		HTTPclient client; // Клиент для скачивания страницы
-		std::string response = ""; // Строка с ответом
-
+		std::string response{ "" }; // Строка с ответом
+		std::string redirectLink{ "" }; //Строка для ссылки в результате редиректа
 		if (isHTTPS)
 		{
-			client.performGetRequest(host, "443", target, 11);
+			redirectLink = client.performGetRequest(host, "443", target, 11);
 		}
 		else
 		{
-			client.performGetRequest(host, "80", target, 11);
+			redirectLink = client.performGetRequest(host, "80", target, 11);
 		}
 		response = client.getData();
 
 		try
 		{
-			// Пробуем парсить страницу
-			if (isHTTPS) 
+			//Если не было редиректа
+			if(redirectLink.length()==0)
 			{
-				host = https_pref + host;
+				linkToDB = inLink; // Сссылка для добавления в БД соответствует входной ссылке
+				if (isHTTPS)
+				{
+					host = https_pref + host;
+				}
+				else {
+					host = http_pref + host;
+				}
 			}
+			//Если был редирект
 			else {
-				host = http_pref + host;
+				linkToDB = redirectLink; //Сссылка для добавления в БД берется их редиректа
+				// Выделим host
+				size_t slashPos = linkToDB.find("/");
+				if (slashPos != std::string::npos) {
+					host = host.substr(0, slashPos);
+				}
+				else {
+					host = linkToDB;
+				}
 			}
+			// Пробуем парсить страницу
 			ParcerHTML parcerHTML(response, host);
 			Links = parcerHTML.getLinks();
 			Frequencies = parcerHTML.getFrequencies();
-			indexatorResult = std::make_tuple(inLink, Links, Frequencies);
+			indexatorResult = std::make_tuple(linkToDB, Links, Frequencies);
 			//std::cout << parcerHTML.getLine();
 		}
 		catch (const std::exception& ex) {
-			std::cout << "\n\t" << "Fail to parce page " + inLink << ": ";
+			std::cout << "\n\t" << "Fail to parce page " + linkToDB << ": ";
 			std::string except = ex.what();
 			std::cout << "\n" << except;
 		}
 	}
 	catch (const std::exception& ex) {
-		std::cout << "\n\t" << "Fail to load page " + inLink << ": ";
+		std::cout << "\n\t" << "Fail to load page " + linkToDB << ": ";
 		std::string except = ex.what();
 		std::cout << "\n" << except;
 	}

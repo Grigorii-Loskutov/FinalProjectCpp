@@ -115,7 +115,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 
 	// Мьютекс для блокировки записи результатов в выходной вектор разными потоками
 	std::mutex vectorMutex;
-	
+
 	// Создадим пул потоков по количеству логических процессоров
 	thread_pool pool(threads_num);
 
@@ -136,9 +136,10 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 
 				// Добавим результы в вектор, в который все потоки складывают свои данные (с разделением ресурсов)
 				// Защитим доступ к outLinksVector с помощью мьютекса
-				std::lock_guard<std::mutex> lock(vectorMutex);
+				
 
 				if (inLinkSet.count(std::get<0>(indexatorResult)) != 0) {
+					std::lock_guard<std::mutex> lock(vectorMutex);
 					resultsVector.push_back(indexatorResult);
 				}
 				else {
@@ -152,7 +153,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 	std::thread T2 = std::thread([&pool] {pool.work(); });
 	// Подождём. когда выполнятся все потоки для очередного уровня Depth
 	T2.join();
-	Sleep(1000);
+	Sleep(4000);
 
 	// --------   Начнем разбор результатов -------------
 	int number;
@@ -261,7 +262,7 @@ void recursiveMultiTreadIndexator(database& DB, int Depth, std::set<std::string>
 			// Получим ID текущего линка
 			currentLinkID = DB.getLinkId(currentLink);
 		}
-		
+
 		if (currentLinkID == -1) {
 			std::cout << "\n There is no ID for link:" << currentLink << std::endl;
 			continue;
